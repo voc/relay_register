@@ -6,6 +6,8 @@ gem 'sinatra', '~> 1.4.5'
 # database stuff
 gem 'sinatra-activerecord', '~> 2.0.2'
 gem 'sqlite3'
+# mqtt client
+gem 'mqtt'
 
 group :development do
   gem 'rspec', '~> 3.1.0'

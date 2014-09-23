@@ -1,5 +1,11 @@
 # relay register
 
+## Usage
+
+```
+curl -k -H "CONTENT-TYPE: application/json" -d '{"api_key":"1231234345354", "data":{…}}'
+```
+
 ## Install
 
 Clone repository.

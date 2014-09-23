@@ -1,0 +1,26 @@
+%table{ border: true}
+  %thead
+    %tr
+      %th hostname
+      %th cpus
+      %th interfaces
+      %th disk space
+      %th memory
+      %th created at
+  %tbody
+    - @relays.each do |relay|
+      %td= relay.hostname
+      %td= "#{relay.cpu_cores}x #{relay.cpu_model_name}"
+      %td
+        - relay.interfaces.each do |k,v|
+          - next if k =~ /^lo/ || v['ipv4'].count == 0
+          = "#{k}: #{v['ipv4'].join(', ')}"
+          %br
+      %td
+        - relay.mount_points.each do |k,v|
+          = "#{k}: #{v['size_available']} free"
+          %br
+      %td
+        total:
+        = relay.total_memory
+      %td= relay.created_at

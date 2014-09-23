@@ -10,8 +10,12 @@ require 'rack/test'
 require 'sinatra'
 require 'haml'
 
-%w{}.each do |file|
-  require File.join(File.dirname(__FILE__), '..', 'lib', "#{file}.rb")
+%w{parser}.each do |file|
+  require File.join(File.dirname(__FILE__), '..', 'lib', 'relay_register', "#{file}.rb")
+end
+
+%w{cpu df free hostname ip}.each do |file|
+  require File.join(File.dirname(__FILE__), '..', 'lib', 'relay_register', 'parser', "#{file}.rb")
 end
 
 require File.join(File.dirname(__FILE__), '..', 'webapp.rb')

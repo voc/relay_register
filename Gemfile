@@ -4,8 +4,8 @@ gem 'rake', '~> 10.1.1'
 # webframework
 gem 'sinatra', '~> 1.4.5'
 # database stuff
-gem "sinatra-activerecord"
-gem "sqlite3"
+gem 'sinatra-activerecord', '~> 2.0.2'
+gem 'sqlite3'
 
 group :development do
   gem 'rspec', '~> 3.1.0'

@@ -1,10 +1,11 @@
 %h2= "#{@relay.ip} - #{@relay.hostname}"
 
-%a{name: 'contact'}
-%h3 contact
-%p
-  %pre
-    = preserve @relay.contact
+- unless @relay.contact.nil? || @relay.contact == ''
+  %a{name: 'contact'}
+  %h3 contact
+  %p
+    %pre
+      = preserve @relay.contact
 
 
 %a{name: 'ip'}

@@ -1,6 +1,6 @@
 %h2= "edit #{@relay.hostname} \##{@relay.id}"
 
-%form{action: "/relay/#{@relay.id}", method: 'post'}
+%form{action: url("/relay/#{@relay.id}"), method: 'post'}
   %input{name: '_method', :type => 'hidden', :value => 'put'}/
   %p
     %label register ip:

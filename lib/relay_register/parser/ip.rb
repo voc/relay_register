@@ -13,6 +13,8 @@ class RelayRegister
             interfaces[current_interface] = {}
             interfaces[current_interface]['ipv4'] = []
             interfaces[current_interface]['ipv6'] = []
+          when /link.+(ether|loopback)\s/
+            interfaces[current_interface]['mac'] = line.split[1]
           when /inet\s/
             interfaces[current_interface]['ipv4'] << line.split[1]
           when /inet6\s/

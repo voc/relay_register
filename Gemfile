@@ -8,6 +8,8 @@ gem 'sinatra-activerecord', '~> 2.0.2'
 gem 'sqlite3'
 # mqtt client
 gem 'mqtt'
+# graph
+gem 'graph', '~> 2.7.0'
 
 group :development do
   gem 'rspec', '~> 3.1.0'

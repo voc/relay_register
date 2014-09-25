@@ -4,5 +4,26 @@
     %title register relays
 
   %body
-    %h1 31c3 relays
+    %h1
+      %a{ href: url('/') } 31c3 relays
+
     = yield
+
+:css
+  a {
+    text-decoration: none;
+    color: #28C3AB;
+    background-color: #000;
+  }
+
+  .action {
+    text-decoration: none;
+    color: #28C3AB;
+    background-color: #000;
+  }
+
+  table a {
+    text-decoration: none;
+    color: black;
+    background-color: white;
+  }

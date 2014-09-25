@@ -1,4 +1,5 @@
 require_relative 'relay_register/parser'
+require_relative 'relay_register/mqtt'
 
 class RelayRegister
 

@@ -1,0 +1,5 @@
+%h2= "delete #{@relay.hostname} \##{@relay.id}"
+
+%form{action: "/relay/#{@relay.id}", method: 'POST'}
+  %input{ type: "hidden", name:"_method", value: "DELETE" }
+  %input{ type: "submit", value:"Delete" }

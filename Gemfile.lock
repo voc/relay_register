@@ -24,6 +24,7 @@ GEM
     docile (1.1.5)
     ffi (1.9.3)
     formatador (0.2.5)
+    graph (2.7.0)
     guard (2.6.1)
       formatador (>= 0.2.4)
       listen (~> 2.7)
@@ -48,6 +49,7 @@ GEM
     lumberjack (1.0.9)
     method_source (0.8.2)
     minitest (5.4.1)
+    mqtt (0.2.0)
     multi_json (1.10.1)
     pry (0.10.1)
       coderay (~> 1.1.0)
@@ -118,8 +120,10 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
+  graph (~> 2.7.0)
   guard-rspec (~> 4.2.8)
   inch (~> 0.4.5)
+  mqtt
   rack (~> 1.4.5)
   rack-test (~> 0.6.2)
   rake (~> 10.1.1)

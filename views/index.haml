@@ -1,3 +1,9 @@
+%ul
+  %li
+    %a{href: url('/graph')} graph
+  %li
+    = "relay count: #{@relays.count}"
+
 %table{ border: true}
   %thead
     %tr
@@ -6,21 +12,36 @@
       %th interfaces
       %th disk space
       %th memory
-      %th created at
+      %th master
+      %th measured bandwith
+      %th actions
   %tbody
     - @relays.each do |relay|
-      %td= relay.hostname
-      %td= "#{relay.cpu_cores}x #{relay.cpu_model_name}"
-      %td
-        - relay.interfaces.each do |k,v|
-          - next if k =~ /^lo/ || v['ipv4'].count == 0
-          = "#{k}: #{v['ipv4'].join(', ')}"
-          %br
-      %td
-        - relay.mount_points.each do |k,v|
-          = "#{k}: #{v['size_available']} free"
-          %br
-      %td
-        total:
-        = relay.total_memory
-      %td= relay.created_at
+      %tr
+        %td
+          %a{ href: url("/relay/#{relay.id}")}= relay.hostname
+        %td
+          %a{href: url("/relay/#{relay.id}#cpu")}= "#{relay.cpu_cores}x #{relay.cpu_model_name}"
+        %td
+          - relay.interfaces.each do |k,v|
+            - next if k =~ /^lo/ || v['ipv4'].count == 0
+            %a{href: url("/relay/#{relay.id}#ip")}= "#{k}: #{v['ipv4'].join(', ')}"
+            %br
+        %td
+          %a{href: url("/relay/#{relay.id}#disk")}= relay.free_space
+        %td
+          %a{href: url("/relay/#{relay.id}#memory")}= "#{relay.total_memory}"
+        %td
+          - begin
+            - r = Relay.find(relay.master)
+            = r.hostname.split('.')[0..1].join('.')
+          - rescue
+            = ""
+        %td
+          - if relay.measured_bandwith == '' || relay.measured_bandwith.nil?
+            = "0 Gbit/s"
+          - else
+            = "#{relay.measured_bandwith} Gbit/s"
+        %td
+          %a{ href: url("/relay/#{relay.id}/edit"), class: 'action' } edit
+          %a{ href: url("/relay/#{relay.id}/delete"), class: 'action' } delete

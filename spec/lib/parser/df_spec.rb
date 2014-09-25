@@ -20,9 +20,9 @@ on\n/dev/mapper/system-root  2.0G   20M  1.8G   2% /\ndev
 END
   end
 
-  describe '.ordered' do
+  describe '.extract_df' do
     it 'should remove not needed mount points' do
-      count = RelayRegister::Parser::CPU.count(@cpu_info)
+      count = RelayRegister::Parser::DF.extract_df(@df).count
       expect(count).to eq(2)
     end
   end

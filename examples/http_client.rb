@@ -10,7 +10,6 @@ api_key = 'd52b65eaa0654ea7e9e627c7d0357583af25b9b58ea84933f66cfcc2ac9d26146b0b1
 client  = Net::HTTP.new(uri.host, uri.port)
 request = Net::HTTP::Post.new(uri.path)
 
-
 data = {
   api_key: api_key,
   data: {
@@ -27,4 +26,4 @@ request.content_type = 'application/json'
 request.body = data
 response = client.request(request)
 
-p response.body
+puts "http status: #{response.code}"

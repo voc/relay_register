@@ -1,12 +1,10 @@
 class RelayRegister
   class Parser
     class DF
-      def self.ordered(string)
-        string.split(/\n/).map do |line|
-          line unless ignore?(line)
-        end.compact
-      end
-
+      # Extract and normalise `df -h` output
+      #
+      # @param string [String] df -h output
+      # @return [Hash] with all mountpoints as keys
       def self.extract_df(string)
         disk_free = {}
 
@@ -27,6 +25,10 @@ class RelayRegister
 
       protected
 
+      # Check if a given mountpoint should be ignored or not
+      #
+      # @param string [String] line to check
+      # @return [Boolean] shows that a given mountpoint or dive should be ignored
       def self.ignore?(string)
         if string =~ /Filesystem|^dev|shm$|cgroup$|run$|\/run/
           true

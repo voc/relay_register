@@ -6,6 +6,8 @@
 curl -k -H "CONTENT-TYPE: application/json" -d '{"api_key":"1231234345354", "data":{…}}'
 ```
 
+Or use the ruby client in examples folder.
+
 ## Install
 
 Clone repository.

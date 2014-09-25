@@ -1,0 +1,32 @@
+%h2= "edit #{@relay.hostname} \##{@relay.id}"
+
+%form{action: "/relay/#{@relay.id}", method: 'post'}
+  %input{name: '_method', :type => 'hidden', :value => 'put'}/
+  %p
+    %label register ip:
+    %input{name: 'relay[ip]', type: 'text', value: @relay.ip}/
+  %p
+    %label register mac:
+    %input{name: 'relay[mac]', type: 'text', value: @relay.mac}/
+  %p
+    %label hostname:
+    %input{name: 'relay[hostname]', type: 'text', value: @relay.hostname}/
+  %p
+    %label measured bandwith in Gbit/s:
+    %input{name: 'relay[measured_bandwith]', type: 'text', value: @relay.measured_bandwith}/
+  %p
+    %label contact:
+    %textarea{name: 'relay[contact]'}= @relay.contact
+
+  - if @relays.count > 1
+    %p
+      %label master relay:
+      %select{name: 'relay[master]'}
+        %option{value: ''}
+        - @relays.select{ |r| r if r.hostname != @relay.hostname || r.ip != @relay.ip }.each do |relay|
+          - if @relay.master.to_i == relay.id
+            %option{value: relay.id, selected: 'selected'}= "#{relay.hostname} - #{relay.ip}"
+          - else
+            %option{value: relay.id}= "#{relay.hostname} - #{relay.ip}"
+  %p
+    %input{name: 'commit', type: 'submit', value: 'update'}/

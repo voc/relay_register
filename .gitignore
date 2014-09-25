@@ -7,3 +7,4 @@ settings.yml
 doc
 db/
 *sqlite3
+*png

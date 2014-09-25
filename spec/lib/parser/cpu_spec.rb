@@ -28,7 +28,7 @@ arch_perfmon pebs bts nopl aperfmperf pni dtes64 monitor ds_cpl vmx smx est
 tm2 ssse3 cx16 xtpr pdcm sse4_1 lahf_lm dtherm tpr_shadow vnmi
 flexpriority\nbogomips\t: 4523.14\nclflush size\t: 64\ncache_alignment\t:
   64\naddress sizes\t: 36 bits physical, 48 bits virtual\npower
-management:\n\n"
+management:\n\n
 END
   end
 

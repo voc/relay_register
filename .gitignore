@@ -5,6 +5,6 @@ settings.yml
 .inch
 .yardoc
 doc
-db/
 *sqlite3
 *png
+*dot

@@ -3,6 +3,7 @@ source 'https://rubygems.org'
 gem 'rake', '~> 10.1.1'
 # webframework
 gem 'sinatra', '~> 1.4.5'
+gem 'haml'
 # database stuff
 gem 'sinatra-activerecord', '~> 2.0.2'
 gem 'sqlite3'

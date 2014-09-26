@@ -2,17 +2,36 @@
 
 require 'json'
 require 'base64'
+require 'openssl'
 require 'net/http'
 
-uri = URI('http://127.0.0.1:4567/register')
+# AES encryption helper
+def encrypt(data, password, iv)
+  cipher = OpenSSL::Cipher.new('aes-256-cbc')
+  cipher.encrypt # set cipher to be encryption mode
+  cipher.key = Digest::SHA256.digest(password)
+  cipher.iv = iv
 
-api_key = 'd52b65eaa0654ea7e9e627c7d0357583af25b9b58ea84933f66cfcc2ac9d26146b0b1438702745688dff1e0fd93edaacd57771dd6dd4162d7532b5e6239cb80c'
-client  = Net::HTTP.new(uri.host, uri.port)
-request = Net::HTTP::Post.new(uri.path)
+  encrypted = ''
+  encrypted << cipher.update(data)
+  encrypted << cipher.final
+  Base64.encode64(encrypted).gsub(/\n/, '')
+end
 
-data = {
+# Please change me…
+uri            = URI('http://127.0.0.1:4567/register')
+api_key        = ''
+encryption_key = ''
+
+# Create some useful variables for encryption and communication
+iv             = OpenSSL::Cipher.new('aes-256-cbc').random_iv.unpack('H*')[0]
+client         = Net::HTTP.new(uri.host, uri.port)
+request        = Net::HTTP::Post.new(uri.path)
+
+# Gather raw data from system
+raw_data = {
   api_key: api_key,
-  data: {
+  raw_data: {
     hostname: `hostname -f`,
     lspci: `lspci`,
     ip_config: `ip a`,
@@ -22,8 +41,16 @@ data = {
   }
 }.to_json
 
+# Prepare request body
+data = {
+  iv: iv,
+  data: encrypt(raw_data, encryption_key, iv)
+}.to_json
+
+# Send data to server
 request.content_type = 'application/json'
 request.body = data
 response = client.request(request)
 
+puts data
 puts "http status: #{response.code}"

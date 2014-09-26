@@ -88,21 +88,25 @@ end
 post '/register' do
   content_type :json
   # parse body send by client
-  data = JSON.parse(request.body.read)
+
+  body = JSON.parse(request.body.read)
+  decrypted_data = RelayRegister::AES.decrypt(body['data'], settings.config['encryption_key'], body['iv'])
+  data = JSON.parse(decrypted_data)
 
   if api_key_valid?(data['api_key'])
-    new_relay = new_relay?(request.ip, mac = extract_first_interface_mac(data['data']['ip_config']))
+    # test present relay in database
+    new_relay = new_relay?(request.ip, mac = extract_first_interface_mac(data['raw_data']['ip_config']))
 
     new_relay == true ? relay = Relay.new : relay = new_relay
 
     relay.ip        = request.ip
     relay.mac       = mac
-    relay.hostname  = data['data']['hostname']
-    relay.ip_config = data['data']['ip_config']
-    relay.disk_size = data['data']['disk_size']
-    relay.cpu       = data['data']['cpu']
-    relay.lspci     = data['data']['lspci']
-    relay.memory    = data['data']['memory']
+    relay.hostname  = data['raw_data']['hostname']
+    relay.ip_config = data['raw_data']['ip_config']
+    relay.disk_size = data['raw_data']['disk_size']
+    relay.cpu       = data['raw_data']['cpu']
+    relay.lspci     = data['raw_data']['lspci']
+    relay.memory    = data['raw_data']['memory']
     relay.save
 
     # send mqtt message to irc
@@ -161,13 +165,11 @@ helpers do
 
   def build_graph
     digraph do
-      Relay.where('master != ""').each do |r|
-        master = Relay.find(r.master)
-        black << node(r.hostname) << edge(master.hostname, r.hostname)
+      Relay.where('master != ""').each do |relay|
+        master = Relay.find(relay.master)
+        black << node(relay.hostname) << edge(master.hostname, relay.hostname)
       end
-       # black << node("live.dus") << edge("live.ber", "live.dus")
-       # black << node("live.dus") << edge("live.het", "live.dus")
-       # black << node("live.het") << edge("live.man", "live.het")
+
        save(File.join(APP_ROOT, 'views', 'public', 'images', 'graph'), 'png')
     end
   end

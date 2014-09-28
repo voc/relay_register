@@ -47,9 +47,9 @@ describe 'RelayRegister' do
       authorize @user, @password
       delete '/relay/1'
 
-      lambda {
+      expect {
         Relay.find(1)
-      }.should raise_exception(ActiveRecord::RecordNotFound)
+      }.to raise_exception(ActiveRecord::RecordNotFound)
       expect(last_response.status).to be 302
     end
   end
@@ -145,13 +145,6 @@ describe 'RelayRegister' do
       }.to_json
 
       post '/register', @data, { 'CONTENT_TYPE' => 'application/json' }
-
-      expect(last_response.status).to be 401
-    end
-
-    it 'should return 401 status with wrong api_key data on POST' do
-      pending
-      post '/register'
 
       expect(last_response.status).to be 401
     end

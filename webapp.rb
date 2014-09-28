@@ -13,10 +13,16 @@ require_relative 'lib/relay_register'
 
 register Sinatra::ActiveRecordExtension
 
+if development?
+  config_file = '/settings.yml.example'
+else
+  config_file '/settings.yml'
+end
+
 set :bind, '127.0.0.1'
 set :views,  File.dirname(__FILE__) + '/views'
 set :public_folder, File.dirname(__FILE__) + '/views/public'
-set :config, YAML.load_file(File.dirname(__FILE__) + '/settings.yml')
+set :config, YAML.load_file(File.dirname(__FILE__) + config_file)
 set :database, {adapter: "sqlite3", database: settings.config['database']}
 
 APP_ROOT = File.expand_path(File.dirname(__FILE__))
@@ -88,9 +94,15 @@ end
 post '/register' do
   content_type :json
   # parse body send by client
-
   body = JSON.parse(request.body.read)
-  decrypted_data = RelayRegister::AES.decrypt(body['data'], settings.config['encryption_key'], body['iv'])
+  # try to decrypt data
+  begin
+    decrypted_data = RelayRegister::AES.decrypt(body['data'], settings.config['encryption_key'], body['iv'])
+  rescue
+    status 510
+    return
+  end
+
   data = JSON.parse(decrypted_data)
 
   if api_key_valid?(data['api_key'])
@@ -122,29 +134,12 @@ end
 # Some useful helper methods
 helpers do
   def send_mqtt_message(relay)
-    message_humans = generate_message_for_humans(relay)
-    message_robots = generate_message_for_robots(relay)
+    message_humans = RelayRegister::Mqtt.generate_message_for_humans(relay)
+    message_robots = RelayRegister::Mqtt.generate_message_for_robots(relay)
 
     RelayRegister::Mqtt.send_message({password: settings.config['mqtt']['password'], username: settings.config['mqtt']['username'], remote_host: settings.config['mqtt']['server']},
                                      message_humans,
                                      message_robots)
-
-  end
-
-  def generate_message_for_humans(relay)
-    hash              = {}
-    hash['component'] = 'relay/new'
-    hash['level']     = 'info'
-    hash['msg']       = "New relay #{relay.ip} registered: "\
-                        "cpu cores: #{relay.cpu_cores}x #{relay.cpu_model_name}, "\
-                        "memory: #{relay.total_memory}, "\
-                        "disk space: #{relay.free_space}, "\
-                        "network interfaces: #{relay.interfaces.count} - "\
-                        "https://c3voc.de/31c3/register/relay/#{relay.id}"
-    hash
-  end
-
-  def generate_message_for_robots(relay)
 
   end
 

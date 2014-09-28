@@ -4,7 +4,7 @@ api_key: möpmöp
 encryption_key: todeskey
 
 mqtt:
-  enabled: true
+  enabled: false
   user: möp
   password: bla
   server: example.local

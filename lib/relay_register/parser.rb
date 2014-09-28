@@ -1,4 +1,4 @@
-%w{cpu df free hostname ip}.each do |parser|
+%w{cpu df free ip}.each do |parser|
   require_relative "parser/#{parser}"
 end
 

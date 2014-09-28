@@ -29,26 +29,9 @@ class Relay < ActiveRecord::Base
   def free_space
     sum = 0
     mount_points.each do |mount_point, values|
-      sum += convert_to_gb(values['size_available'])
+      sum += RelayRegister::Converter.convert_to_gb(values['size_available'])
     end
 
     "#{sum.round(1)}GB"
-  end
-
-  private
-
-  def convert_to_gb(string)
-    number = string.gsub(/[a-zA-Z]+/, '').to_f
-
-    case string.match(/K|M|G|T/)[0]
-    when 'K'
-      number/1024/1024
-    when 'M'
-      number/1024
-    when 'G'
-      number
-    when 'T'
-      number*1024
-    end
   end
 end

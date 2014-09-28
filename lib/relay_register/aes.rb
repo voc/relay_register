@@ -24,7 +24,7 @@ class RelayRegister
     # @param password [String] password
     # @param iv [String] initialization vector used for encryption
     # @return [String] base64 encoded encrypted data
-    def encrypt(data, password, iv)
+    def self.encrypt(data, password, iv)
       cipher = OpenSSL::Cipher.new(CIPHER)
       cipher.encrypt # set cipher to be encryption mode
       cipher.key = Digest::SHA256.digest(password)

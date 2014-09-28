@@ -17,11 +17,11 @@ class RelayRegister
       def self.readable_size(size)
         size = size.to_f
 
-        case size
-          when size < 1024
-            "#{size}MB" % size
-          else
-            "#{(size/1024).round(2)}GB"
+        case
+        when size< 1024.0
+          "#{size.round(2)}MB"
+        else
+          "#{(size/1024).round(2)}GB"
         end
       end
     end

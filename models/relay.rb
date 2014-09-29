@@ -1,5 +1,9 @@
 class Relay < ActiveRecord::Base
 
+  scope :public_relays, -> { where(public: true) }
+  scope :hidden_relays, -> { where(public: false) }
+  scope :visibility_groups, -> { group('public') }
+
   def cpu_cores
     RelayRegister::Parser::CPU.count(self.cpu)
   end
@@ -13,9 +17,9 @@ class Relay < ActiveRecord::Base
   end
 
   def interfaces
-    interfaces = RelayRegister::Parser::IP.extract_interfaces(self.ip_config)
-    interfaces.delete('lo')
-    interfaces
+    RelayRegister::Parser::IP.extract_interfaces(self.ip_config).tap do |interfaces|
+      interfaces.delete('lo')
+    end
   end
 
   def mount_points
@@ -28,6 +32,7 @@ class Relay < ActiveRecord::Base
 
   def free_space
     sum = 0
+
     mount_points.each do |mount_point, values|
       sum += RelayRegister::Converter.convert_to_gb(values['size_available'])
     end

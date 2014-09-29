@@ -159,10 +159,23 @@ helpers do
   end
 
   def build_graph
-    digraph do
-      Relay.where('master != ""').each do |relay|
-        master = Relay.find(relay.master)
-        black << node(relay.hostname) << edge(master.hostname, relay.hostname)
+    digraph 'streaming cdn' do
+      Relay.all.each do |relay|
+        case relay.public
+        when true
+          color = green
+        when false
+          color = red
+        else
+          color = black
+        end
+
+        if relay.master == ''
+          color << node(relay.hostname)
+        else
+          master = Relay.find(relay.master)
+          color << node(relay.hostname) << edge(master.hostname, relay.hostname)
+        end
       end
 
        save(File.join(APP_ROOT, 'views', 'public', 'images', 'graph'), 'png')

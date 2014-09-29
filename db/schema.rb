@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20140923105516) do
+ActiveRecord::Schema.define(version: 20140929112219) do
 
   create_table "relays", force: true do |t|
     t.string   "ip"
@@ -27,6 +27,7 @@ ActiveRecord::Schema.define(version: 20140923105516) do
     t.text     "lspci"
     t.datetime "created_at"
     t.datetime "updated_at"
+    t.boolean  "public"
   end
 
 end

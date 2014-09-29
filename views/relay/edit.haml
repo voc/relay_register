@@ -29,4 +29,9 @@
           - else
             %option{value: relay.id}= "#{relay.hostname} - #{relay.ip}"
   %p
+    %label public:
+    %input{:type => 'hidden', :name => 'relay[public]', :value => 'false'}
+    %input{:type => 'checkbox', :name => 'relay[public]', :value => 'true', checked: @relay.public}
+
+  %p
     %input{name: 'commit', type: 'submit', value: 'update'}/

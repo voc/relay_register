@@ -14,15 +14,14 @@ require_relative 'lib/relay_register'
 register Sinatra::ActiveRecordExtension
 
 if development?
-  config_file = '/settings.yml.example'
+  set :config, YAML.load_file(File.dirname(__FILE__) + '/settings.yml.example')
 else
-  config_file '/settings.yml'
+  set :config, YAML.load_file(File.dirname(__FILE__) + '/settings.yml')
 end
 
 set :bind, '127.0.0.1'
 set :views,  File.dirname(__FILE__) + '/views'
 set :public_folder, File.dirname(__FILE__) + '/views/public'
-set :config, YAML.load_file(File.dirname(__FILE__) + config_file)
 set :database, {adapter: "sqlite3", database: settings.config['database']}
 
 APP_ROOT = File.expand_path(File.dirname(__FILE__))

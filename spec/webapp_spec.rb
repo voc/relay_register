@@ -154,4 +154,18 @@ describe 'RelayRegister' do
       expect(last_response.status).to be 500
     end
   end
+
+  describe '/settings' do
+    it 'should render settings page' do
+      get '/settings'
+
+      expect(last_response.status).to be 200
+    end
+
+    it 'should be proteced with authentication' do
+      get '/settings'
+
+      expect(last_response.status).to be 401
+    end
+  end
 end

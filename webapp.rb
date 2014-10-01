@@ -129,6 +129,13 @@ post '/register' do
   end
 end
 
+get '/settings' do
+  protected!
+
+  @settings = settings.config
+  haml :settings
+end
+
 
 # Some useful helper methods
 helpers do

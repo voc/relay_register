@@ -1,0 +1,17 @@
+%h2 settings
+
+%p
+  api-key:
+  %code
+    = @settings['api_key']
+  %br
+  encryption-key:
+  %code
+    = @settings['encryption_key']
+
+- if @settings['mqtt']['enabled']
+  %p
+    mqtt-server:
+    %code
+      = @settings['mqtt']['server']
+    %br

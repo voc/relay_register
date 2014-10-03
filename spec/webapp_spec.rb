@@ -157,6 +157,7 @@ describe 'RelayRegister' do
 
   describe '/settings' do
     it 'should render settings page' do
+      authorize @user, @password
       get '/settings'
 
       expect(last_response.status).to be 200

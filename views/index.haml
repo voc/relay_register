@@ -2,7 +2,7 @@
   %li
     %a{href: url('/graph')} graph
   %li
-    = "relay count: #{@relays.count}"
+    = "relay count: #{@relays.count} public relays: #{@relays.where(public: true).count}"
 
 %table{ border: true}
   %thead
@@ -52,3 +52,8 @@
         %td
           %a{ href: url("/relay/#{relay.id}/edit"), class: 'action' } edit
           %a{ href: url("/relay/#{relay.id}/delete"), class: 'action' } delete
+    %tr
+      %td{colspan: 7 } expected public network streaming capacity
+      %td
+        = "#{@measured_bandwith} Gbit/s"
+      %td

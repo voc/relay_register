@@ -31,6 +31,14 @@ get '/' do
   protected!
 
   @relays = Relay.all
+
+  sum = 0
+  @relays.where(public: true).each do |relay|
+    sum += relay.measured_bandwith.to_f if relay.measured_bandwith
+  end
+
+  @measured_bandwith = sum
+
   haml :index
 end
 

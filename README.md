@@ -2,27 +2,61 @@
 
 ## Usage
 
+Sending data to `/register` can be done with curl
+
 ```
-curl -k -H "CONTENT-TYPE: application/json" -d '{"api_key":"1231234345354", "data":{…}}'
+curl -k -H "CONTENT-TYPE: application/json" -d '{"iv":"1231234345354", "data":{…}}'
 ```
 
-Or use the ruby client in examples folder.
+or use the ruby client in examples folder.
+
+The API expects the following object resources in JSON format:
+
+```
+{
+  iv: iv,
+  data: {
+    api_key: api_key,
+    raw_data: {
+      hostname: `hostname -f`,
+      lspci: `lspci`,
+      ip_config: `ip a`,
+      disk_size: `df -h`,
+      memory: `free -m`,
+      cpu: File.read('/proc/cpuinfo')
+    }
+  }
+}
+```
+
+`data` needs to be `AES-256-CBC` encrypted and Base64 encoded.
+
 
 ## Install
 
-Clone repository.
+1. Clone repository.
 
-Install dependencies.
+2. Install dependencies.
 
-```
- bundle install
-```
+    ```
+     bundle install
+    ```
 
-Test installation and run application with puma.
+3. Create `settings.yml`
 
-```
- ruby webapp.rb
-```
+    ```
+      cp settings.yml.example settings.yml
+    ```
+
+    ```
+      vim settings.yml
+    ```
+
+4. Test installation and run application with puma.
+
+    ```
+     ruby webapp.rb
+    ```
 
 ## Deployment
 

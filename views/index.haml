@@ -2,19 +2,24 @@
   %li
     %a{href: url('/graph')} graph
   %li
-    = "relay count: #{@relays.count} public relays: #{@relays.where(public: true).count}"
+    = "relay count: #{@relays.count}, public relays: #{@public_relays.count}"
 
 %table{ border: true}
   %thead
     %tr
-      %th pbl
-      %th hostname
+      %th
+        %a{href: url('/?sort=pbl')} pbl
+      %th
+        %a{href: url('/?sort=hostname')} hostname
       %th cpus
       %th interfaces
       %th disk space
-      %th memory
-      %th master
-      %th measured bandwith
+      %th
+        %a{href: url('/?sort=memory')} memory
+      %th
+        %a{href: url('/?sort=master')} master
+      %th
+        %a{href: url('/?sort=bw')} measured bandwith
       %th actions
   %tbody
     - @relays.each do |relay|
@@ -28,7 +33,7 @@
         %td
           %a{ href: url("/relay/#{relay.id}")}= relay.hostname
         %td
-          %a{href: url("/relay/#{relay.id}#cpu")}= "#{relay.cpu_cores}x #{relay.cpu_model_name}"
+          %a{ href: url("/relay/#{relay.id}#cpu") }= "#{relay.cpu_cores}x #{relay.cpu_model_name}"
         %td
           - relay.interfaces.each do |k,v|
             - next if k =~ /^lo/ || v['ipv4'].count == 0

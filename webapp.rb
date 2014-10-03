@@ -30,10 +30,11 @@ APP_ROOT = File.expand_path(File.dirname(__FILE__))
 get '/' do
   protected!
 
-  @relays = Relay.all
+  @relays        = sorting_relays
+  @public_relays = Relay.where(public: true)
 
   sum = 0
-  @relays.where(public: true).each do |relay|
+  @public_relays.each do |relay|
     sum += relay.measured_bandwith.to_f if relay.measured_bandwith
   end
 
@@ -208,5 +209,17 @@ helpers do
 
     @auth ||=  Rack::Auth::Basic::Request.new(request.env)
     @auth.provided? && @auth.basic? && @auth.credentials && @auth.credentials == [user, password]
+  end
+
+  def sorting_relays
+    case params[:sort]
+    when 'pbl'      then Relay.order(:public)
+    when 'hostname' then Relay.order(:hostname)
+    when 'master'   then Relay.order(:master)
+    when 'memory'   then Relay.all.sort_by{ |o, e| o.total_memory <=> o.total_memory }
+    when 'bw'       then Relay.order(measured_bandwith: :desc)
+    else
+      Relay.all
+    end
   end
 end

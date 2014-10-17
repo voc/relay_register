@@ -2,8 +2,8 @@ class Relay < ActiveRecord::Base
 
   before_save :default_master
 
-  scope :public_relays, -> { where(public: true) }
-  scope :hidden_relays, -> { where(public: false) }
+  scope :public_relays,     -> { where(public: true) }
+  scope :hidden_relays,     -> { where(public: false) }
   scope :visibility_groups, -> { group('public') }
 
   def cpu_cores
@@ -28,8 +28,12 @@ class Relay < ActiveRecord::Base
     RelayRegister::Parser::DF.extract_df(self.disk_size)
   end
 
-  def get_mac(interface_name = 'eth0')
-    interfaces[interface_name]['mac']
+  def get_mac(interface_name = nil)
+    if interface_name.nil?
+      interfaces[interfaces.keys[0]]['mac']
+    else
+      interfaces[interface_name]['mac']
+    end
   end
 
   def free_space

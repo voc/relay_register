@@ -1,5 +1,7 @@
 class Relay < ActiveRecord::Base
 
+  before_save :default_master
+
   scope :public_relays, -> { where(public: true) }
   scope :hidden_relays, -> { where(public: false) }
   scope :visibility_groups, -> { group('public') }
@@ -38,5 +40,11 @@ class Relay < ActiveRecord::Base
     end
 
     "#{sum.round(1)}GB"
+  end
+
+  protected
+
+  def default_master
+    self.master ||= ''
   end
 end

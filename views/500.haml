@@ -1,0 +1,8 @@
+%h2= "Internal Server Error - #{@error.class}"
+
+%p.message
+  = @error.message
+
+%p.message
+  - @error.backtrace.each do |line|
+    = line

@@ -26,6 +26,20 @@ set :database, {adapter: "sqlite3", database: settings.config['database']}
 
 APP_ROOT = File.expand_path(File.dirname(__FILE__))
 
+disable :show_exceptions
+disable :raise_errors
+
+error do
+  if request.request_method == 'GET'
+    protected!
+
+    @error = request.env['sinatra.error']
+    haml :'500'
+  else
+    status 500
+  end
+end
+
 # Root
 get '/' do
   protected!
@@ -144,7 +158,6 @@ get '/settings' do
   @settings = settings.config
   haml :settings
 end
-
 
 # Some useful helper methods
 helpers do

@@ -2,10 +2,12 @@
 
 ## Usage
 
-Sending data to `/register` can be done with curl
+### Register new relay
+
+Sending data to `/register` to register a new relay can be done with curl
 
 ```
-curl -k -H "CONTENT-TYPE: application/json" -d '{"iv":"1231234345354", "data":{…}}'
+curl -k -H "CONTENT-TYPE: application/json" -d "{"iv":"1231234345354", "data":{…}}"
 ```
 
 or use the ruby client in examples folder.
@@ -14,22 +16,52 @@ The API expects the following object resources in JSON format:
 
 ```
 {
-  iv: iv,
-  data: {
-    api_key: api_key,
-    raw_data: {
-      hostname: `hostname -f`,
-      lspci: `lspci`,
-      ip_config: `ip a`,
-      disk_size: `df -h`,
-      memory: `free -m`,
-      cpu: File.read('/proc/cpuinfo')
+  "iv": "iv",
+  "data": {
+    "api_key": "api_key",
+    "raw_data": {
+      "hostname": "#{`hostname -f`}",
+      "lspci": "#{`lspci`}",
+      "ip_config": "#{`ip a`}",
+      "disk_size": "#{`df -h`}",
+      "memory": "`#{free -m`}",
+      "cpu": "#{File.read('/proc/cpuinfo')}"
     }
   }
 }
 ```
 
 `data` needs to be `AES-256-CBC` encrypted and Base64 encoded.
+
+### Measuring bandwith
+
+To send some bandwith data use `/register/bandwith` path and POST
+JSON in the following format:
+
+```
+{
+  "iv": "iv",
+  "data": {
+    "api_key": "api_key",
+    "raw_data": {
+      "time": "1242458669857",
+      "ip_config": "`ip a`",
+      "measures": {
+        "single_destinations": {
+          "10.10.13.37": "iperf csv output",
+          "192.168.23.42": "iperf csv output"
+        },
+        "multiple_destinations": {
+          "destinations": ["10.10.13.37", "192.168.23.42"],
+          "iperf": "iperf sum in csv format"
+        }
+      }
+    }
+  }
+}
+```
+
+See `measure_bw.rb` in examples folder.
 
 
 ## Install

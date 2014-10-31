@@ -1,10 +1,12 @@
 class Relay < ActiveRecord::Base
 
+  has_many :bandwiths
   before_save :default_master
 
   scope :public_relays,     -> { where(public: true) }
   scope :hidden_relays,     -> { where(public: false) }
   scope :visibility_groups, -> { group('public') }
+  scope :one_host_tests,    -> { where(at_the_same_time: false) }
 
   def cpu_cores
     RelayRegister::Parser::CPU.count(self.cpu)
@@ -44,6 +46,28 @@ class Relay < ActiveRecord::Base
     end
 
     "#{sum.round(1)}GB"
+  end
+
+  def rx
+    sum      = 0.0
+    bw_tests = bandwiths.where( at_the_same_time: false)
+
+    bw_tests.each do |bw|
+      sum += bw.rx
+    end
+
+    sum/bw_tests.count
+  end
+
+  def tx
+    sum = 0.0
+    bw_tests = bandwiths.where(at_the_same_time: false)
+
+    bw_tests.each do |bw|
+      sum += bw.tx
+    end
+
+    sum/bw_tests.count
   end
 
   protected

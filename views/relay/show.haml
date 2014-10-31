@@ -1,5 +1,14 @@
 %h2= "#{@relay.ip} - #{@relay.hostname}"
 
+.menu
+  %ul
+    - unless @relay_bw.nil?
+      %li
+        %a{href: '#iperf'} iperf
+    - %w{ip disk lspci memory cpu}.each do |section|
+      %li
+        %a{href: "\##{section}"}= section
+
 - unless @relay.contact.nil? || @relay.contact == ''
   %a{name: 'contact'}
   %h3 contact
@@ -7,6 +16,27 @@
     %pre
       = preserve @relay.contact
 
+- unless @relay_bw.nil?
+  %a{name: 'ipfer'}
+  %h3= "last iperf run #{@relay_bw.keys.last}"
+  %table{border: true}
+    %thead
+      %th destination
+      %th asn
+      %th tx
+      %th rx
+    %tbody
+      - @relay_bw[@relay_bw.keys.last].each do |bw|
+        - unless bw.at_the_same_time
+          - as = @subnet_tree.search(bw.destination)
+          %tr{ title: "#{as[:name]}"}
+            %td= bw.destination
+            %td
+              %a{ href: "https://www.peeringdb.com/private/participant_list.php?s_name=&s_asn=#{as[:asn]}" }= as[:name]
+            %td= Bandwith.normalize(bw.tx)
+            %td= Bandwith.normalize(bw.rx)
+  %p
+    %a{href: url("/relay/#{@relay.id}/bandwith")} → more
 
 %a{name: 'ip'}
 %h3 ip a

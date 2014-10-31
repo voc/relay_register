@@ -11,7 +11,17 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20140929112219) do
+ActiveRecord::Schema.define(version: 20141017190521) do
+
+  create_table "bandwiths", force: true do |t|
+    t.integer  "relay_id"
+    t.string   "destination"
+    t.text     "iperf"
+    t.boolean  "at_the_same_time", default: false
+    t.boolean  "is_deleted",       default: false
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
 
   create_table "relays", force: true do |t|
     t.string   "ip"

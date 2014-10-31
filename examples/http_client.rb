@@ -20,8 +20,8 @@ end
 
 # Please change me…
 uri            = URI('http://127.0.0.1:4567/register')
-api_key        = ''
-encryption_key = ''
+api_key        = 'möpmöp'
+encryption_key = 'todeskey'
 
 # Create some useful variables for encryption and communication
 iv             = OpenSSL::Cipher.new('aes-256-cbc').random_iv.unpack('H*')[0]

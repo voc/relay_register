@@ -2,63 +2,130 @@
   %li
     %a{href: url('/graph')} graph
   %li
+    %a{href: url('/?group=✓')} group by as
+  %li
     = "relay count: #{@relays.count}, public relays: #{@public_relays.count}"
 
-%table{ border: true}
-  %thead
-    %tr
-      %th
-        %a{href: url('/?sort=pbl')} pbl
-      %th
-        %a{href: url('/?sort=hostname')} hostname
-      %th cpus
-      %th interfaces
-      %th disk space
-      %th
-        %a{href: url('/?sort=memory')} memory
-      %th
-        %a{href: url('/?sort=master')} master
-      %th
-        %a{href: url('/?sort=bw')} measured bandwith
-      %th actions
-  %tbody
-    - @relays.each do |relay|
-      %tr
-        - if relay.public
-          %td{class: 'public'}
-        - elsif relay.public == false
-          %td{class: 'non_public'}
-        - else
+- if @group
+  - @relays.group_by{ |r| @subnet_tree.search(r.ip)[:name] }.each do |asn, relays|
+    %h3= asn
+    %table{ border: true}
+      %thead
+        %tr
+          %th
+            %a{href: url('/?sort=pbl')} pbl
+          %th
+            %a{href: url('/?sort=hostname')} hostname
+          %th cpus
+          %th interfaces
+          %th disk space
+          %th
+            %a{href: url('/?sort=memory')} memory
+          %th
+            %a{href: url('/?sort=master')} master
+          %th
+            %a{href: url('/?sort=tx')} tx
+          %th
+            %a{href: url('/?sort=rx')} rx
+          %th actions
+      %tbody
+        - relays.each do |relay|
+          %tr{ title: "#{asn}"}
+            - if relay.public
+              %td{class: 'public'}
+            - elsif relay.public == false
+              %td{class: 'non_public'}
+            - else
+              %td
+            %td
+              %a{ href: url("/relay/#{relay.id}")}= relay.hostname
+            %td
+              %a{ href: url("/relay/#{relay.id}#cpu") }= "#{relay.cpu_cores}x #{relay.cpu_model_name}"
+            %td
+              - relay.interfaces.each do |k,v|
+                - next if k =~ /^lo/ || v['ipv4'].count == 0
+                %a{href: url("/relay/#{relay.id}#ip")}= "#{k}: #{v['ipv4'].join(', ')}"
+                %br
+            %td
+              %a{href: url("/relay/#{relay.id}#disk")}= relay.free_space
+            %td
+              %a{href: url("/relay/#{relay.id}#memory")}= "#{relay.total_memory}"
+            %td
+              - begin
+                - r = Relay.find(relay.master)
+                = r.hostname.split('.')[0..1].join('.')
+              - rescue
+                = ""
+            -# tx
+            %td= RelayRegister::Bandwith.normalize(relay.tx)
+            -# rx
+            %td= RelayRegister::Bandwith.normalize(relay.rx)
+            %td
+              %a{ href: url("/relay/#{relay.id}/edit"), class: 'action' } edit
+              %a{ href: url("/relay/#{relay.id}/delete"), class: 'action' } delete
+        %tr
+          %td{colspan: 7 } expected public network streaming capacity
+          %td= RelayRegister::Bandwith.normalize(relays.map{|r| r.tx }.inject{|sum,x| sum + x })
+          %td= RelayRegister::Bandwith.normalize(relays.map{|r| r.rx }.inject{|sum,x| sum + x })
           %td
-        %td
-          %a{ href: url("/relay/#{relay.id}")}= relay.hostname
-        %td
-          %a{ href: url("/relay/#{relay.id}#cpu") }= "#{relay.cpu_cores}x #{relay.cpu_model_name}"
-        %td
-          - relay.interfaces.each do |k,v|
-            - next if k =~ /^lo/ || v['ipv4'].count == 0
-            %a{href: url("/relay/#{relay.id}#ip")}= "#{k}: #{v['ipv4'].join(', ')}"
-            %br
-        %td
-          %a{href: url("/relay/#{relay.id}#disk")}= relay.free_space
-        %td
-          %a{href: url("/relay/#{relay.id}#memory")}= "#{relay.total_memory}"
-        %td
-          - begin
-            - r = Relay.find(relay.master)
-            = r.hostname.split('.')[0..1].join('.')
-          - rescue
-            = ""
-        %td
-          - if relay.measured_bandwith == '' || relay.measured_bandwith.nil?
-            = "0 Gbit/s"
+
+- else
+  %table{ border: true}
+    %thead
+      %tr
+        %th
+          %a{href: url('/?sort=pbl')} pbl
+        %th
+          %a{href: url('/?sort=hostname')} hostname
+        %th cpus
+        %th interfaces
+        %th disk space
+        %th
+          %a{href: url('/?sort=memory')} memory
+        %th
+          %a{href: url('/?sort=master')} master
+        %th
+          %a{href: url('/?sort=tx')} tx
+        %th
+          %a{href: url('/?sort=rx')} rx
+        %th actions
+    %tbody
+      - @relays.each do |relay|
+        %tr{ title: "#{@subnet_tree.search(relay.ip)[:name]}"}
+          - if relay.public
+            %td{class: 'public'}
+          - elsif relay.public == false
+            %td{class: 'non_public'}
           - else
-            = "#{relay.measured_bandwith} Gbit/s"
+            %td
+          %td
+            %a{ href: url("/relay/#{relay.id}")}= relay.hostname
+          %td
+            %a{ href: url("/relay/#{relay.id}#cpu") }= "#{relay.cpu_cores}x #{relay.cpu_model_name}"
+          %td
+            - relay.interfaces.each do |k,v|
+              - next if k =~ /^lo/ || v['ipv4'].count == 0
+              %a{href: url("/relay/#{relay.id}#ip")}= "#{k}: #{v['ipv4'].join(', ')}"
+              %br
+          %td
+            %a{href: url("/relay/#{relay.id}#disk")}= relay.free_space
+          %td
+            %a{href: url("/relay/#{relay.id}#memory")}= "#{relay.total_memory}"
+          %td
+            - begin
+              - r = Relay.find(relay.master)
+              = r.hostname.split('.')[0..1].join('.')
+            - rescue
+              = ""
+          -# tx
+          %td= RelayRegister::Bandwith.normalize(relay.tx)
+          -# rx
+          %td= RelayRegister::Bandwith.normalize(relay.rx)
+          %td
+            %a{ href: url("/relay/#{relay.id}/edit"), class: 'action' } edit
+            %a{ href: url("/relay/#{relay.id}/delete"), class: 'action' } delete
+      %tr
+        %td{colspan: 7 } expected public network streaming capacity
+        %td= RelayRegister::Bandwith.normalize(@relays.map{|r| r.tx }.inject{|sum,x| sum + x })
+        %td= RelayRegister::Bandwith.normalize(@relays.map{|r| r.rx }.inject{|sum,x| sum + x })
         %td
-          %a{ href: url("/relay/#{relay.id}/edit"), class: 'action' } edit
-          %a{ href: url("/relay/#{relay.id}/delete"), class: 'action' } delete
-    %tr
-      %td{colspan: 7 } expected public network streaming capacity
-      %td
-        = "#{@measured_bandwith} Gbit/s"
-      %td

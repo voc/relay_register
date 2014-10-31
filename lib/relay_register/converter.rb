@@ -9,7 +9,7 @@ class RelayRegister
     def self.convert_to_gb(string)
       number = string.gsub(/[a-zA-Z]+/, '').to_f
 
-      case string.match(/K|M|G|T/)[0]
+      case string.match(/K|M|G|T|0/)[0]
       when 'K'
         number/1024/1024
       when 'M'
@@ -18,6 +18,8 @@ class RelayRegister
         number
       when 'T'
         number*1024
+      else
+        0
       end
     end
   end

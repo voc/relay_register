@@ -34,6 +34,8 @@ GEM
     guard-rspec (4.2.10)
       guard (~> 2.1)
       rspec (>= 2.14, < 4.0)
+    haml (4.0.5)
+      tilt
     hitimes (1.2.2)
     i18n (0.6.11)
     inch (0.4.10)
@@ -122,6 +124,7 @@ PLATFORMS
 DEPENDENCIES
   graph (~> 2.7.0)
   guard-rspec (~> 4.2.8)
+  haml
   inch (~> 0.4.5)
   mqtt
   rack (~> 1.4.5)

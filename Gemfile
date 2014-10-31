@@ -11,6 +11,8 @@ gem 'sqlite3'
 gem 'mqtt'
 # graph
 gem 'graph', '~> 2.7.0'
+# asn lookup
+gem 'ruby-radix'
 
 group :development do
   gem 'rspec', '~> 3.1.0'

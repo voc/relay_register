@@ -1,0 +1,20 @@
+%h2 Bandwith tests
+
+- @relay_bw.each do |date, data|
+  %h3= date
+  %table{border: true}
+    %thead
+      %th destination
+      %th asn
+      %th tx
+      %th rx
+    %tbody
+      - data.each do |bw|
+        - unless bw.at_the_same_time
+          - as = @subnet_tree.search(bw.destination)
+          %tr{ title: "#{as[:name]}" }
+            %td= bw.destination
+            %td
+              %a{ href: "https://www.peeringdb.com/private/participant_list.php?s_name=&s_asn=#{as[:asn]}" }= as[:name]
+            %td= Bandwith.normalize(bw.tx)
+            %td= Bandwith.normalize(bw.rx)

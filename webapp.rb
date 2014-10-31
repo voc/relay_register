@@ -9,6 +9,8 @@ require 'json'
 require 'graph'
 # own libs
 require_relative 'models/relay'
+require_relative 'models/bandwith'
+require_relative 'models/subnet_tree'
 require_relative 'lib/relay_register'
 
 register Sinatra::ActiveRecordExtension
@@ -22,7 +24,8 @@ end
 set :bind, '127.0.0.1'
 set :views,  File.dirname(__FILE__) + '/views'
 set :public_folder, File.dirname(__FILE__) + '/views/public'
-set :database, {adapter: "sqlite3", database: settings.config['database']}
+set :database, { adapter: "sqlite3", database: settings.config['database'] }
+set :subnet_tree, SubnetTree.new(settings.config['asn_db'])
 
 APP_ROOT = File.expand_path(File.dirname(__FILE__))
 
@@ -44,8 +47,10 @@ end
 get '/' do
   protected!
 
+  @subnet_tree   = settings.subnet_tree
   @relays        = sorting_relays
   @public_relays = Relay.where(public: true)
+  @group         = true if params[:group]
 
   sum = 0
   @public_relays.each do |relay|
@@ -61,8 +66,26 @@ end
 get '/relay/:id' do
   protected!
 
-  @relay = Relay.find(params[:id])
+  @relay       = Relay.find(params[:id])
+  @subnet_tree = settings.subnet_tree
+  if @relay.bandwiths.count != 0
+    @relay_bw = @relay.bandwiths.group_by{ |r| r.created_at }.sort_by{ |k, v| k }.to_h
+  end
+
   haml :'relay/show'
+end
+
+# Manage Relays
+get '/relay/:id/bandwith' do
+  protected!
+
+  @relay       = Relay.find(params[:id])
+  @subnet_tree = settings.subnet_tree
+  if @relay.bandwiths.count != 0
+    @relay_bw = @relay.bandwiths.group_by{ |r| r.created_at }.sort_by{ |k, v| k }.reverse.to_h
+  end
+
+  haml :'relay/bandwith'
 end
 
 get '/relay/:id/delete' do
@@ -115,17 +138,7 @@ end
 # Submit new relays
 post '/register' do
   content_type :json
-  # parse body send by client
-  body = JSON.parse(request.body.read)
-  # try to decrypt data
-  begin
-    decrypted_data = RelayRegister::AES.decrypt(body['data'], settings.config['encryption_key'], body['iv'])
-  rescue
-    status 510
-    return
-  end
-
-  data = JSON.parse(decrypted_data)
+  data = parse_request_body(request.body.read)
 
   if api_key_valid?(data['api_key'])
     # test present relay in database
@@ -152,6 +165,39 @@ post '/register' do
   end
 end
 
+post '/register/bandwith' do
+  content_type :json
+  data = parse_request_body(request.body.read)
+
+  if api_key_valid?(data['api_key']) && data['raw_data']['measures'] != nil
+    relay = new_relay?(request.ip, mac = extract_first_interface_mac(data['raw_data']['ip_config']))
+
+    # Create new bw entry for each pf destination
+    data['raw_data']['measures']['single_destinations'].each do |dest, iperf|
+      Bandwith.create(
+        relay: relay,
+        iperf: iperf,
+        destination: dest,
+        created_at: Time.at(data['raw_data']['time'])
+      )
+    end
+
+    # Create bw parallel test item
+    md = data['raw_data']['measures']['multiple_destinations']
+    Bandwith.create(
+      relay: relay,
+      iperf: md['iperf'],
+      at_the_same_time: true,
+      destination: md['destinations'].join(','),
+      created_at: Time.at(data['raw_data']['time'])
+    )
+
+    status 200
+  else
+    status 401
+  end
+end
+
 get '/settings' do
   protected!
 
@@ -161,6 +207,24 @@ end
 
 # Some useful helper methods
 helpers do
+  # Take http POST request body, encrypts data and return json data.
+  #
+  # @param request_body [String] http post request body
+  # @return [JSON] parsed body as json
+  def parse_request_body(request_body)
+    # parse body send by client
+    body = JSON.parse(request_body)
+    # try to decrypt data
+    begin
+      decrypted_data = RelayRegister::AES.decrypt(body['data'], settings.config['encryption_key'], body['iv'])
+    rescue
+      status 510
+      return
+    end
+
+    JSON.parse(decrypted_data)
+  end
+
   def send_mqtt_message(relay)
     message_humans = RelayRegister::Mqtt.generate_message_for_humans(relay)
     message_robots = RelayRegister::Mqtt.generate_message_for_robots(relay)

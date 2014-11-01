@@ -1,4 +1,5 @@
-%h2= "#{@relay.ip} - #{@relay.hostname}"
+%h2{title: @subnet_tree.search(@relay.ip)[:name]}
+  = "#{@relay.ip} - #{@relay.hostname}"
 
 .menu
   %ul

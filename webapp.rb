@@ -69,7 +69,7 @@ get '/relay/:id' do
   @relay       = Relay.find(params[:id])
   @subnet_tree = settings.subnet_tree
   if @relay.bandwiths.count != 0
-    @relay_bw = @relay.bandwiths.group_by{ |r| r.created_at }.sort_by{ |k, v| k }.to_h
+    @relay_bw = Hash[@relay.bandwiths.group_by{ |r| r.created_at }.sort_by{ |k, v| k }]
   end
 
   haml :'relay/show'
@@ -82,7 +82,7 @@ get '/relay/:id/bandwith' do
   @relay       = Relay.find(params[:id])
   @subnet_tree = settings.subnet_tree
   if @relay.bandwiths.count != 0
-    @relay_bw = @relay.bandwiths.group_by{ |r| r.created_at }.sort_by{ |k, v| k }.reverse.to_h
+    @relay_bw = Hash[@relay.bandwiths.group_by{ |r| r.created_at }.sort_by{ |k, v| k }.reverse]
   end
 
   haml :'relay/bandwith'

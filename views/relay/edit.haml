@@ -12,9 +12,6 @@
     %label hostname:
     %input{name: 'relay[hostname]', type: 'text', value: @relay.hostname}/
   %p
-    %label measured bandwith in Gbit/s:
-    %input{name: 'relay[measured_bandwith]', type: 'text', value: @relay.measured_bandwith}/
-  %p
     %label contact:
     %textarea{name: 'relay[contact]'}= @relay.contact
 

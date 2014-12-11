@@ -70,6 +70,23 @@ class Relay < ActiveRecord::Base
     sum/bw_tests.count
   end
 
+  def ips
+    ips = []
+
+    RelayRegister::Parser::IP.extract_interfaces(ip_config).each do |k, interface|
+      %w{ipv4 ipv6}.each do |ip_version|
+        interface["#{ip_version}"].compact.each do |ip|
+          addr = IPAddr.new(ip.gsub(/\/\d+/, ''))
+          unless addr.to_s =~ /fe80:|127\.0\.0\.|::1/
+            ips << addr
+          end
+        end
+      end
+    end
+
+    ips
+  end
+
   protected
 
   def default_master

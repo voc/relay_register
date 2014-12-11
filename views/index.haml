@@ -4,6 +4,8 @@
   %li
     %a{href: url('/?group=✓')} group by as
   %li
+    %a{href: url('/ipaddresses')} list all ipaddresses
+  %li
     = "relay count: #{@relays.count}, public relays: #{@public_relays.count}"
 
 - if @group

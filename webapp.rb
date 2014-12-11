@@ -62,6 +62,24 @@ get '/' do
   haml :index
 end
 
+get '/ipaddresses' do
+  protected!
+
+  v4 = []
+  v6 = []
+  Relay.all.each do |relay|
+    relay.ips.each do |ip|
+      if ip.ipv6?
+        v6 << "'#{relay.hostname.chomp}': '#{ip.to_s}'"
+      else
+        v4 << "'#{relay.hostname.chomp}': '#{ip.to_s}'"
+      end
+    end
+  end
+
+  [ v4 + v6 ].join(",<br>")
+end
+
 # Manage Relays
 get '/relay/:id' do
   protected!

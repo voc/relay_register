@@ -72,6 +72,9 @@ get '/ipaddresses' do
       if ip.ipv6?
         v6 << "'#{relay.hostname.chomp}': '#{ip.to_s}'"
       else
+        next if [IPAddr.new("10.0.0.0/8"),
+                 IPAddr.new("172.16.0.0/12"),
+                 IPAddr.new("192.168.0.0/16")].any? {|i| i.include? ip}
         v4 << "'#{relay.hostname.chomp}': '#{ip.to_s}'"
       end
     end

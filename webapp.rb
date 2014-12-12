@@ -84,6 +84,36 @@ get '/ipaddresses' do
   [ v4 + v6 ].join(",<br>")
 end
 
+get '/relays' do
+  content_type :json
+
+  relays = {}
+  Relay.all.each do |relay|
+    relays[relay.hostname] = {}
+    relays[relay.hostname]['as'] = {}
+
+    as = settings.subnet_tree.search(relay.ip)
+    relays[relay.hostname]['as']['name'] = as[:name]
+    relays[relay.hostname]['as']['asn']  = as[:asn]
+
+    relays[relay.hostname]['ips'] = {}
+    relays[relay.hostname]['ips']['register'] = relay.ip
+    relays[relay.hostname]['ips']['ipv4']     = relay.ips.map{|ip| ip.to_s unless ip.ipv6?}.compact
+    relays[relay.hostname]['ips']['ipv6']     = relay.ips.map{|ip| ip.to_s if ip.ipv6?}.compact
+
+    relays[relay.hostname]['tags']           = relay.tags.map(&:name)
+    relays[relay.hostname]['public']         = relay.public
+    relays[relay.hostname]['interfaces']     = relay.interfaces
+    relays[relay.hostname]['total_memory']   = relay.total_memory
+    relays[relay.hostname]['cpu_cores']      = relay.cpu_cores
+    relays[relay.hostname]['cpu_model_name'] = relay.cpu_model_name
+    relays[relay.hostname]['disk_space']     = relay.free_space
+    relays[relay.hostname]['mount_points']   = relay.mount_points
+  end
+
+  JSON.pretty_generate(relays)
+end
+
 # Manage Relays
 get '/relay/:id' do
   protected!

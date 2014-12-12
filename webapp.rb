@@ -11,6 +11,7 @@ require 'graph'
 require_relative 'models/relay'
 require_relative 'models/bandwith'
 require_relative 'models/subnet_tree'
+require_relative 'models/tag'
 require_relative 'lib/relay_register'
 
 register Sinatra::ActiveRecordExtension

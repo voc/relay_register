@@ -1,6 +1,7 @@
 class Relay < ActiveRecord::Base
 
   has_many :bandwiths
+  has_and_belongs_to_many :tags, -> { uniq }
   before_save :default_master
 
   scope :public_relays,     -> { where(public: true) }

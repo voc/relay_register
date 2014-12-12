@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20141017190521) do
+ActiveRecord::Schema.define(version: 20141212144454) do
 
   create_table "bandwiths", force: true do |t|
     t.integer  "relay_id"
@@ -38,6 +38,17 @@ ActiveRecord::Schema.define(version: 20141017190521) do
     t.datetime "created_at"
     t.datetime "updated_at"
     t.boolean  "public"
+  end
+
+  create_table "relays_tags", id: false, force: true do |t|
+    t.integer "relay_id"
+    t.integer "tag_id"
+  end
+
+  create_table "tags", force: true do |t|
+    t.string   "name"
+    t.datetime "created_at"
+    t.datetime "updated_at"
   end
 
 end

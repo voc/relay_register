@@ -96,6 +96,8 @@ get '/relays' do
     relays[relay.hostname]['as']['name'] = as[:name]
     relays[relay.hostname]['as']['asn']  = as[:asn]
 
+    relays[relay.hostname]['dns_priority'] = relay.dns_priority
+
     relays[relay.hostname]['ips'] = {}
     relays[relay.hostname]['ips']['register'] = relay.ip
     relays[relay.hostname]['ips']['ipv4']     = relay.ips.map{|ip| ip.to_s unless ip.ipv6?}.compact
@@ -316,11 +318,19 @@ helpers do
           color = black
         end
 
+        relay_string = "#{relay.hostname_short}\n"\
+                       "#{relay.tags.map(&:name).join(', ')}\n"\
+                       "#{relay.dns_priority}"
+
         if relay.master == ''
-          color << node("#{relay.hostname_short} \n#{relay.tags.map(&:name).join(', ')}")
+          color << node(relay_string)
         else
           master = Relay.find(relay.master)
-          color << node("#{relay.hostname_short} \n#{relay.tags.map(&:name).join(', ')}") << edge("#{master.hostname_short} \n#{master.tags.map(&:name).join(', ')}", "#{relay.hostname_short} \n#{relay.tags.map(&:name).join(', ')}")
+          master_string = "#{master.hostname_short}\n"\
+                          "#{master.tags.map(&:name).join(', ')}\n"\
+                          "#{master.dns_priority}"
+
+          color << node(relay_string) << edge(master_string, relay_string)
         end
       end
 

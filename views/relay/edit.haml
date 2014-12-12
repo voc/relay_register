@@ -15,6 +15,10 @@
     %label contact:
     %textarea{name: 'relay[contact]'}= @relay.contact
 
+  %p
+    %label dns priority:
+    %input{name: 'relay[dns_priority]', type: 'text', value: @relay.dns_priority}/
+
   - if @relays.count > 1
     %p
       %label master relay:

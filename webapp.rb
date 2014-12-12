@@ -142,7 +142,9 @@ put '/relay/:id' do
 
   @relay = Relay.find(params[:id])
 
-  if @relay.update_attributes(params[:relay])
+  p params
+
+  if @relay.update_attributes(params[:relay]) && update_tags(@relay, params[:tags])
     redirect to("relay/#{@relay.id}")
   else
     render :'relay/edit'
@@ -285,10 +287,10 @@ helpers do
         end
 
         if relay.master == ''
-          color << node(relay.hostname)
+          color << node("#{relay.hostname} - #{relay.tags.map(&:name).join(',')}")
         else
           master = Relay.find(relay.master)
-          color << node(relay.hostname) << edge(master.hostname, relay.hostname)
+          color << node("#{relay.hostname} - #{relay.tags.map(&:name).join(',')}") << edge("#{master.hostname} - #{master.tags.map(&:name).join(',')}", "#{relay.hostname} - #{relay.tags.map(&:name).join(',')}")
         end
       end
 
@@ -318,7 +320,19 @@ helpers do
     when 'memory'   then Relay.all.sort_by{ |o, e| o.total_memory <=> o.total_memory }
     when 'bw'       then Relay.order(measured_bandwith: :desc)
     else
-      Relay.all
+      Relay.order(:public)
+    end
+  end
+
+  def update_tags(relay, tags)
+    p tags
+    tags.each do |key, value|
+      case value
+      when /true/
+        relay.tags << Tag.find(key)
+      else
+        relay.tags.delete(Tag.find(key))
+      end
     end
   end
 end

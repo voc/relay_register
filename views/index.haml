@@ -1,10 +1,12 @@
-%ul
+%ul.head_menu
   %li
     %a{href: url('/graph')} graph
   %li
     %a{href: url('/?group=✓')} group by as
   %li
     %a{href: url('/ipaddresses')} list all ipaddresses
+
+%ul.head_status
   %li
     = "relay count: #{@relays.count}, public relays: #{@public_relays.count}"
 
@@ -16,6 +18,7 @@
         %tr
           %th
             %a{href: url('/?sort=pbl')} pbl
+          %th tags
           %th
             %a{href: url('/?sort=hostname')} hostname
           %th cpus
@@ -39,6 +42,9 @@
               %td{class: 'non_public'}
             - else
               %td
+            %td
+              %a{ href: url("/relay/#{relay.id}")}
+                = relay.tags.map(&:name).join('<br>')
             %td
               %a{ href: url("/relay/#{relay.id}")}= relay.hostname
             %td
@@ -78,6 +84,8 @@
         %th
           %a{href: url('/?sort=pbl')} pbl
         %th
+          tags
+        %th
           %a{href: url('/?sort=hostname')} hostname
         %th cpus
         %th interfaces
@@ -99,7 +107,9 @@
           - elsif relay.public == false
             %td{class: 'non_public'}
           - else
-            %td
+          %td
+            %a{ href: url("/relay/#{relay.id}")}
+              = relay.tags.map(&:name).join('<br>')
           %td
             %a{ href: url("/relay/#{relay.id}")}= relay.hostname
           %td

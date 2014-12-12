@@ -1,5 +1,5 @@
 %h2{title: @subnet_tree.search(@relay.ip)[:name]}
-  = "#{@relay.ip} - #{@relay.hostname}"
+  = "#{@relay.hostname}"
 
 .menu
   %ul
@@ -9,6 +9,26 @@
     - %w{ip disk lspci memory cpu}.each do |section|
       %li
         %a{href: "\##{section}"}= section
+
+%ul.head_menu
+  %li
+    %a{href: url("/relay/#{@relay.id}/edit")} edit
+
+%ul.head_status
+  %li
+    = "public: "
+    %code
+      = "#{@relay.public}"
+  - if @relay.master != ''
+    %li
+      = "master: "
+      %code
+        ="#{Relay.find(@relay.master).hostname}"
+  - if @relay.tags.count > 0
+    %li
+      = "tags: "
+      %code
+        = "#{@relay.tags.map(&:name).join(', ')}"
 
 - unless @relay.contact.nil? || @relay.contact == ''
   %a{name: 'contact'}

@@ -72,7 +72,7 @@
               %a{ href: url("/relay/#{relay.id}/edit"), class: 'action' } edit
               %a{ href: url("/relay/#{relay.id}/delete"), class: 'action' } delete
         %tr
-          %td{colspan: 7 } expected public network streaming capacity
+          %td{colspan: 8 } expected public network streaming capacity
           %td= RelayRegister::Bandwith.normalize(relays.map{|r| r.tx }.inject{|sum,x| sum + x })
           %td= RelayRegister::Bandwith.normalize(relays.map{|r| r.rx }.inject{|sum,x| sum + x })
           %td
@@ -107,6 +107,7 @@
           - elsif relay.public == false
             %td{class: 'non_public'}
           - else
+            %td
           %td
             %a{ href: url("/relay/#{relay.id}")}
               = relay.tags.map(&:name).join('<br>')
@@ -137,7 +138,7 @@
             %a{ href: url("/relay/#{relay.id}/edit"), class: 'action' } edit
             %a{ href: url("/relay/#{relay.id}/delete"), class: 'action' } delete
       %tr
-        %td{colspan: 7 } expected public network streaming capacity
+        %td{colspan: 8 } expected public network streaming capacity
         %td= RelayRegister::Bandwith.normalize(@relays.map{|r| r.tx }.inject{|sum,x| sum + x })
         %td= RelayRegister::Bandwith.normalize(@relays.map{|r| r.rx }.inject{|sum,x| sum + x })
         %td

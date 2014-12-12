@@ -46,7 +46,7 @@
               %a{ href: url("/relay/#{relay.id}")}
                 = relay.tags.map(&:name).join('<br>')
             %td
-              %a{ href: url("/relay/#{relay.id}")}= relay.hostname
+              %a{ href: url("/relay/#{relay.id}")}= relay.hostname_short
             %td
               %a{ href: url("/relay/#{relay.id}#cpu") }= "#{relay.cpu_cores}x #{relay.cpu_model_name}"
             %td
@@ -60,8 +60,7 @@
               %a{href: url("/relay/#{relay.id}#memory")}= "#{relay.total_memory}"
             %td
               - begin
-                - r = Relay.find(relay.master)
-                = r.hostname.split('.')[0..1].join('.')
+                = Relay.find(relay.master).hostname_short
               - rescue
                 = ""
             -# tx
@@ -112,7 +111,7 @@
             %a{ href: url("/relay/#{relay.id}")}
               = relay.tags.map(&:name).join('<br>')
           %td
-            %a{ href: url("/relay/#{relay.id}")}= relay.hostname
+            %a{ href: url("/relay/#{relay.id}")}= relay.hostname_short
           %td
             %a{ href: url("/relay/#{relay.id}#cpu") }= "#{relay.cpu_cores}x #{relay.cpu_model_name}"
           %td
@@ -126,8 +125,7 @@
             %a{href: url("/relay/#{relay.id}#memory")}= "#{relay.total_memory}"
           %td
             - begin
-              - r = Relay.find(relay.master)
-              = r.hostname.split('.')[0..1].join('.')
+              = Relay.find(relay.master).hostname_short
             - rescue
               = ""
           -# tx

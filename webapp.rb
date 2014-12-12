@@ -287,10 +287,10 @@ helpers do
         end
 
         if relay.master == ''
-          color << node("#{relay.hostname} \n#{relay.tags.map(&:name).join(',')}")
+          color << node("#{relay.hostname_short} \n#{relay.tags.map(&:name).join(', ')}")
         else
           master = Relay.find(relay.master)
-          color << node("#{relay.hostname} \n#{relay.tags.map(&:name).join(',')}") << edge("#{master.hostname} \n#{master.tags.map(&:name).join(',')}", "#{relay.hostname} \n#{relay.tags.map(&:name).join(',')}")
+          color << node("#{relay.hostname_short} \n#{relay.tags.map(&:name).join(', ')}") << edge("#{master.hostname_short} \n#{master.tags.map(&:name).join(', ')}", "#{relay.hostname_short} \n#{relay.tags.map(&:name).join(', ')}")
         end
       end
 

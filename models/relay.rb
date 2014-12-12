@@ -88,6 +88,10 @@ class Relay < ActiveRecord::Base
     ips
   end
 
+  def hostname_short
+    hostname.split('.')[0..1].join('.')
+  end
+
   protected
 
   def default_master

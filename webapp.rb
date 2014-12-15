@@ -85,6 +85,8 @@ get '/ipaddresses' do
 end
 
 get '/relays' do
+  protected!
+
   content_type :json
 
   relays = {}

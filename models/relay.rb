@@ -96,6 +96,10 @@ class Relay < ActiveRecord::Base
     master == "" ? "" : Relay.find(master).hostname
   end
 
+  def hostname
+    read_attribute(:hostname).chomp
+  end
+
   protected
 
   def default_master

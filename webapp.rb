@@ -99,7 +99,7 @@ get '/relays' do
     relays[relay.hostname]['as']['asn']  = as[:asn]
 
     relays[relay.hostname]['dns_priority'] = relay.dns_priority
-    relays[relay.hostname]['master']       = Relay.find(relay.master).hostname
+    relays[relay.hostname]['master']       = relay.master_hostname
 
     relays[relay.hostname]['ips'] = {}
     relays[relay.hostname]['ips']['register'] = relay.ip

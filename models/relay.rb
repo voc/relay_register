@@ -92,6 +92,10 @@ class Relay < ActiveRecord::Base
     hostname.split('.')[0..1].join('.')
   end
 
+  def master_hostname
+    master == "" ? "" : Relay.find(master).hostname
+  end
+
   protected
 
   def default_master

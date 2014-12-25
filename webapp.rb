@@ -108,6 +108,7 @@ get '/relays' do
 
     relays[relay.hostname]['tags']           = relay.tags.map(&:name)
     relays[relay.hostname]['public']         = relay.public
+    relays[relay.hostname]['cm_deploy']      = relay.cm_deploy
     relays[relay.hostname]['interfaces']     = relay.interfaces
     relays[relay.hostname]['total_memory']   = relay.total_memory
     relays[relay.hostname]['cpu_cores']      = relay.cpu_cores

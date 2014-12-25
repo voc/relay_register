@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20141212211450) do
+ActiveRecord::Schema.define(version: 20141225183948) do
 
   create_table "bandwiths", force: true do |t|
     t.integer  "relay_id"
@@ -39,6 +39,7 @@ ActiveRecord::Schema.define(version: 20141212211450) do
     t.datetime "updated_at"
     t.boolean  "public"
     t.integer  "dns_priority",      default: 0
+    t.boolean  "cm_deploy",         default: true
   end
 
   create_table "relays_tags", id: false, force: true do |t|

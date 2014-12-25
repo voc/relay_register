@@ -33,6 +33,10 @@
     %label public:
     %input{:type => 'hidden', :name => 'relay[public]',   :value => 'false'}
     %input{:type => 'checkbox', :name => 'relay[public]', :value => 'true', checked: @relay.public}
+  %p
+    %label cm deploy:
+    %input{:type => 'hidden', :name => 'relay[cm_deploy]',   :value => 'false'}
+    %input{:type => 'checkbox', :name => 'relay[cm_deploy]', :value => 'true', checked: @relay.cm_deploy}
 
   %p
     %label tags:

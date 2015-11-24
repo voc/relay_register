@@ -314,12 +314,17 @@ helpers do
     digraph 'streaming cdn' do
       Relay.all.each do |relay|
         case relay.public
-        when true
-          color = green
-        when false
-          color = red
-        else
-          color = black
+          when true
+            color = green
+          when false
+            color = red
+          else
+            color = black
+        end
+
+        # TODO: arg*#ck overwrites statemant above
+        if relay.lb
+          color = blue
         end
 
         relay_string = "#{relay.hostname_short}\n"\
@@ -327,7 +332,20 @@ helpers do
                        "#{relay.dns_priority}"
 
         if relay.master == ''
-          color << node(relay_string)
+          if relay.lb
+            # create node
+            color << node(relay_string)
+            # create edge to all public relays
+            Relay.where(public: true) .each do |public_relay|
+              public_relay_string = "#{public_relay.hostname_short}\n"\
+                                    "#{public_relay.tags.map(&:name).join(', ')}\n"\
+                                    "#{public_relay.dns_priority}"
+
+              color << edge(public_relay_string, relay_string)
+            end
+          else
+            color << node(relay_string)
+          end
         else
           master = Relay.find(relay.master)
           master_string = "#{master.hostname_short}\n"\
@@ -337,7 +355,6 @@ helpers do
           color << node(relay_string) << edge(master_string, relay_string)
         end
       end
-
        save(File.join(APP_ROOT, 'views', 'public', 'images', 'graph'), 'png')
     end
   end

@@ -20,6 +20,11 @@
       = "public: "
       %code
         = "#{@relay.public}"
+  - unless @relay.lb.nil?
+    %li
+      = "loadbalancer: "
+      %code
+        = "#{@relay.lb}"
   %li
     = "dns priority: #{@relay.dns_priority} of #{Relay.max_dns_priority}"
   - if @relay.master != ''

@@ -38,7 +38,9 @@
       %tbody
         - relays.each do |relay|
           %tr{ title: "#{asn}"}
-            - if relay.public
+            - if relay.lb
+              %td{class: 'loadbalancer'}
+            - elsif relay.public
               %td{class: 'public'}
             - elsif relay.public == false
               %td{class: 'non_public'}

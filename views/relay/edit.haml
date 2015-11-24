@@ -34,6 +34,10 @@
     %input{:type => 'hidden', :name => 'relay[public]',   :value => 'false'}
     %input{:type => 'checkbox', :name => 'relay[public]', :value => 'true', checked: @relay.public}
   %p
+    %label loadbalancer:
+    %input{:type => 'hidden', :name => 'relay[lb]',   :value => 'false'}
+    %input{:type => 'checkbox', :name => 'relay[lb]', :value => 'true', checked: @relay.lb}
+  %p
     %label cm deploy:
     %input{:type => 'hidden', :name => 'relay[cm_deploy]',   :value => 'false'}
     %input{:type => 'checkbox', :name => 'relay[cm_deploy]', :value => 'true', checked: @relay.cm_deploy}

@@ -9,28 +9,47 @@ class Relay < ActiveRecord::Base
   scope :visibility_groups, -> { group('public') }
   scope :one_host_tests,    -> { where(at_the_same_time: false) }
 
+  # Get CPU core count
+  #
+  # @return [Fixnum] cpu core count
   def cpu_cores
     RelayRegister::Parser::CPU.count(self.cpu)
   end
 
+  # Get CPU name
+  #
+  # @return [String] cpu model name
   def cpu_model_name
     RelayRegister::Parser::CPU.model_name(self.cpu)
   end
 
+  # Get memory
+  #
+  # @return [String] total memory
   def total_memory
     RelayRegister::Parser::Free.total(self.memory)
   end
 
+  # Get all network interfaces
+  #
+  # @return [Hash] network interfaces without loopback interface
   def interfaces
     RelayRegister::Parser::IP.extract_interfaces(self.ip_config).tap do |interfaces|
       interfaces.delete('lo')
     end
   end
 
+  # Get all mount points
+  #
+  # @return [Hash] mount points
   def mount_points
     RelayRegister::Parser::DF.extract_df(self.disk_size)
   end
 
+  # Get mac address from defined interface
+  #
+  # @param interface_name [String] name of the interface
+  # @return [String] mac address from first or defined interface
   def get_mac(interface_name = nil)
     if interface_name.nil?
       interfaces[interfaces.keys[0]]['mac']
@@ -39,6 +58,9 @@ class Relay < ActiveRecord::Base
     end
   end
 
+  # Get free disk space over all mount points
+  #
+  # @return [String] free disk space in GB
   def free_space
     sum = 0
 
@@ -46,7 +68,7 @@ class Relay < ActiveRecord::Base
       sum += RelayRegister::Converter.convert_to_gb(values['size_available'])
     end
 
-    "#{sum.round(1)}GB"
+    "#{sum.round(1)} GB"
   end
 
   def rx
@@ -71,6 +93,9 @@ class Relay < ActiveRecord::Base
     sum/bw_tests.count
   end
 
+  # Get ip addresses
+  #
+  # @return [Array<IPAddr>] relays ip addresses
   def ips
     ips = []
 
@@ -88,16 +113,32 @@ class Relay < ActiveRecord::Base
     ips
   end
 
+  # Get shorten fqdn hostname
+  #
+  # @return hostname [String] shorten
   def hostname_short
     hostname.split('.')[0..1].join('.')
   end
 
+  # Get relay master hostname as string
+  #
+  # @return relay [String] as master hostname
   def master_hostname
     master == "" ? "" : Relay.find(master).hostname
   end
 
+  # Get hostname without optinal separator
+  #
+  # @return hostname [String]
   def hostname
     read_attribute(:hostname).chomp
+  end
+
+  # Return maximun of all defined priorities
+  #
+  # @return max_dns_priority [Fixnum]
+  def self.max_dns_priority
+    Relay.all.map(&:dns_priority).max
   end
 
   protected

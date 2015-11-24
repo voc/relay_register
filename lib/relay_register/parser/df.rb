@@ -28,7 +28,8 @@ class RelayRegister
       # Check if a given mountpoint should be ignored or not
       #
       # @param string [String] line to check
-      # @return [Boolean] shows that a given mountpoint or dive should be ignored
+      # @return [Boolean] shows that a given mountpoint or dive should be
+      #                   ignored
       def self.ignore?(string)
         if string =~ /Filesystem|^dev|shm$|cgroup$|run$|\/run/
           true

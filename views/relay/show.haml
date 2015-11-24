@@ -21,7 +21,7 @@
       %code
         = "#{@relay.public}"
   %li
-    = "dns priority: #{@relay.dns_priority} of TODO!!1!"
+    = "dns priority: #{@relay.dns_priority} of #{Relay.max_dns_priority}"
   - if @relay.master != ''
     %li
       = "master: "

@@ -19,9 +19,9 @@ class RelayRegister
 
         case
         when size< 1024.0
-          "#{size.round(2)}MB"
+          "#{size.round(2)} MB"
         else
-          "#{(size/1024).round(2)}GB"
+          "#{(size/1024).round(2)} GB"
         end
       end
     end

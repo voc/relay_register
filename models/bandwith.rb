@@ -5,19 +5,21 @@ class Bandwith < ActiveRecord::Base
 
   def tx
     split_iperf.each do |iperf|
-      split = iperf.split(',')
+      split = iperf.split(/\n/)[0].split(',')
 
       if split[3] =~ /#{destination}/
         return split[8].to_i
       end
     end
+
+    0
   end
 
   def rx
     split_iperf.each do |iperf|
-      split = iperf.split(',')
+      split = iperf.split(/\n/)[1].split(',')
 
-      if split[1] =~ /#{destination}/
+      if split[3] =~ /#{destination}/
         return split[8].to_i
       end
     end

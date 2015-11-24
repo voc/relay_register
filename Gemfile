@@ -1,16 +1,16 @@
 source 'https://rubygems.org'
 
-gem 'rake', '~> 10.1.1'
+gem 'rake', '~> 10.4.2'
 # webframework
-gem 'sinatra', '~> 1.4.5'
+gem 'sinatra', '~> 1.4.6'
 gem 'haml'
 # database stuff
-gem 'sinatra-activerecord', '~> 2.0.2'
+gem 'sinatra-activerecord', '~> 2.0.9'
 gem 'sqlite3'
 # mqtt client
 gem 'mqtt'
 # graph
-gem 'graph', '~> 2.7.0'
+gem 'graph', '~> 2.8.0'
 # asn lookup
 gem 'ruby-radix'
 

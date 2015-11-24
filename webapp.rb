@@ -51,7 +51,7 @@ get '/' do
   @subnet_tree   = settings.subnet_tree
   @relays        = sorting_relays
   @public_relays = Relay.where(public: true)
-  @group         = true if params[:group]
+  @group         = true
 
   sum = 0
   @public_relays.each do |relay|

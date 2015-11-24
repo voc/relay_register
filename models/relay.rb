@@ -1,3 +1,5 @@
+require 'ipaddr'
+
 class Relay < ActiveRecord::Base
 
   has_many :bandwiths

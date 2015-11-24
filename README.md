@@ -96,7 +96,7 @@ It is highly recommended to deploy this application with passenger or comparable
 
 ## License
 
-Copyright (c) 2014, c3voc<br>
+Copyright (c) 2014-2015, c3voc<br>
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without

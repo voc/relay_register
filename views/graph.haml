@@ -1,3 +1,6 @@
 %h2 cdn graph
 
-%img{src: url('/images/graph.png')}
+- if Relay.count == 0
+  %p no relays registered
+- else
+  %img{src: url('/images/graph.png')}

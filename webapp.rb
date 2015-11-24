@@ -191,7 +191,7 @@ end
 get '/graph' do
   protected!
 
-  build_graph
+  build_graph unless Relay.ount == 0
   haml :graph
 end
 

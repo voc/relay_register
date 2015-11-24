@@ -1,6 +1,8 @@
 database: db/db.sqlite3
 asn_db: db/asn_db.txt
 
+reason: 32C3
+
 api_key: möpmöp
 encryption_key: todeskey
 

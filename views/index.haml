@@ -2,15 +2,19 @@
   %li
     %a{href: url('/graph')} graph
   %li
-    %a{href: url('/?group=✓')} group by as
-  %li
     %a{href: url('/ipaddresses')} list all ipaddresses
   %li
     %a{href: url('/relays')} json
 
 %ul.head_status
   %li
-    = "relay count: #{@relays.count}, public relays: #{@public_relays.count}"
+    = "relay count: #{@relays.count}"
+  %li
+    = "public relays: #{@public_relays.count}"
+  %li
+    = "master relays: #{@relays.where(public: false, lb: false).count}"
+  %li
+    = "loadbalancer: #{@relays.where(lb: true).count}"
 
 - if @group
   - @relays.group_by{ |r| @subnet_tree.search(r.ip)[:name] }.each do |asn, relays|

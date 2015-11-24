@@ -4,11 +4,26 @@ require 'set'
 require 'pathname'
 require 'thread'
 
-@tree     = Radix.new
-@set      = Set.new   # unordered values with no duplicates
-@as_count = {}
-@as_name  = {}
-@work_q   = Queue.new
+IPV4_REGEXP = "\b(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|"\
+              "2[0-4][0-9]|[01]?[0-9][0-9]?)\b"
+
+IPV6_REGEXP = "(([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:)"\
+              "{1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]"\
+              "{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}"\
+              "(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]"\
+              "{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|"\
+              "[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]"\
+              "{1,4}){1,7}|:)|fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|"\
+              "::(ffff(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}"\
+              "[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|([0-9a-"\
+              "fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.)"\
+              "{3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]))"
+
+@tree      = Radix.new
+@set       = Set.new   # unordered values with no duplicates
+@as_count  = {}
+@as_name   = {}
+@work_q    = Queue.new
 @semaphore = Mutex.new
 
 access_files = ARGV.map{|f| Pathname.new(f)}
@@ -34,23 +49,38 @@ access_files.each_slice(4) do |file1, file2, file3, file4|
     $stderr.puts file
 
     read_file_threads << Thread.new do
+      i = 0
       File.open(file).each_line do |line|
-        addr_raw = line.split(' ')[0]
-        ip = nil
+        i =+ 1
 
-        if addr_raw =~ /^::ffff.*/
-          addr = /(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])/.match(addr_raw).to_s
-          ip = IPAddr.new(addr)
-        else
-          ip = IPAddr.new(addr_raw)
+        ip = line[/#{IPV4_REGEXP}/]
+
+        if ip == ''
+          ip = line[/#{IPV6_REGEXP}/]
         end
 
         @work_q.push(ip)
+
+        if i%10000 == 0
+          until @work_q.empty?
+            @semaphore.synchronize {
+              begin
+                @set << @work_q.pop(true)
+              rescue
+                # do nothing
+              end
+            }
+          end
+        end
       end
 
       until @work_q.empty?
         @semaphore.synchronize {
-          @set << @work_q.pop
+          begin
+            @set << @work_q.pop(true)
+          rescue
+            # do nothing
+          end
         }
       end
     end
@@ -61,7 +91,10 @@ end
 
 ip_tree_thread.join
 
+puts @set.count
+
 @set.each do |ip|
+  next if ip == nil
   subnet = @tree.search_best(ip)
   next if subnet.nil?
 
@@ -69,6 +102,7 @@ ip_tree_thread.join
 
   @as_count[asn] = 0 if @as_count[asn].nil?
   @as_count[asn] += 1
+
 end
 
 # calculate sum
@@ -79,12 +113,9 @@ end.inject{|sum, x| sum + x}
 longest_asn     = @as_count.map{|k,v| k.length }.max
 longest_as_name = @as_count.map{|k,v| @as_name[k].length }.max
 Hash[@as_count.sort_by{ |k, v| v }].keys.each do |k|
-    key = "#{k}"
-    key << ' ' * (longest_asn-k.length)
-    key = "#{key} #{@as_name[k]}"
-    key << ' ' * (longest_as_name-@as_name[k].length)
+    key = "#{k}#{' ' * (longest_asn-k.length)} #{@as_name[k]}#{' ' * (longest_as_name-@as_name[k].length)}"
 
-    puts "%s %5d %s\n" % [key, @as_count[k], "#" * ((@as_count[k].to_f/count)*500)]
+    puts "%s %7d %s\n" % [key, @as_count[k], "#" * ((@as_count[k].to_f/count)*500)]
 end
 
-puts "%s %5d" % [' ' * (longest_as_name+longest_asn) + ' ', count]
+puts "%s %7d" % [' ' * (longest_as_name+longest_asn) + ' ', count]

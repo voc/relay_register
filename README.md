@@ -63,6 +63,12 @@ JSON in the following format:
 
 See `measure_bw.rb` in examples folder.
 
+## Create archive
+
+    ```
+     wget --http-user=winke --http-password=katze --mirror --page-requisites \
+          --adjust-extension --convert-links https://c3voc.de/31c3/register
+    ```
 
 ## Install
 

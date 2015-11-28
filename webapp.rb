@@ -9,7 +9,7 @@ require 'json'
 require 'graph'
 # own libs
 require_relative 'models/relay'
-require_relative 'models/bandwith'
+require_relative 'models/bandwidth'
 require_relative 'models/subnet_tree'
 require_relative 'models/tag'
 require_relative 'lib/relay_register'
@@ -55,10 +55,10 @@ get '/' do
 
   sum = 0
   @public_relays.each do |relay|
-    sum += relay.measured_bandwith.to_f if relay.measured_bandwith
+    sum += relay.measured_bandwidth.to_f if relay.measured_bandwidth
   end
 
-  @measured_bandwith = sum
+  @measured_bandwidth = sum
 
   haml :index
 end
@@ -126,24 +126,24 @@ get '/relay/:id' do
 
   @relay       = Relay.find(params[:id])
   @subnet_tree = settings.subnet_tree
-  if @relay.bandwiths.count != 0
-    @relay_bw = Hash[@relay.bandwiths.group_by{ |r| r.created_at }.sort_by{ |k, v| k }]
+  if @relay.bandwidths.count != 0
+    @relay_bw = Hash[@relay.bandwidths.group_by{ |r| r.created_at }.sort_by{ |k, v| k }]
   end
 
   haml :'relay/show'
 end
 
 # Manage Relays
-get '/relay/:id/bandwith' do
+get /\/relay\/\d+\/bandwidth|bandwith/ do
   protected!
 
   @relay       = Relay.find(params[:id])
   @subnet_tree = settings.subnet_tree
-  if @relay.bandwiths.count != 0
-    @relay_bw = Hash[@relay.bandwiths.group_by{ |r| r.created_at }.sort_by{ |k, v| k }.reverse]
+  if @relay.bandwidths.count != 0
+    @relay_bw = Hash[@relay.bandwidths.group_by{ |r| r.created_at }.sort_by{ |k, v| k }.reverse]
   end
 
-  haml :'relay/bandwith'
+  haml :'relay/bandwidth'
 end
 
 get '/relay/:id/delete' do
@@ -225,7 +225,7 @@ post '/register' do
   end
 end
 
-post '/register/bandwith' do
+post '/register/bandwidth' do
   content_type :json
   data = parse_request_body(request.body.read)
 
@@ -234,7 +234,7 @@ post '/register/bandwith' do
 
     # Create new bw entry for each pf destination
     data['raw_data']['measures']['single_destinations'].each do |dest, iperf|
-      Bandwith.create(
+      Bandwidth.create(
         relay: relay,
         iperf: iperf,
         destination: dest,
@@ -244,7 +244,7 @@ post '/register/bandwith' do
 
     # Create bw parallel test item
     md = data['raw_data']['measures']['multiple_destinations']
-    Bandwith.create(
+    Bandwidth.create(
       relay: relay,
       iperf: md['iperf'],
       at_the_same_time: true,
@@ -379,7 +379,7 @@ helpers do
     when 'hostname' then Relay.order(:hostname)
     when 'master'   then Relay.order(:master)
     when 'memory'   then Relay.all.sort_by{ |o, e| o.total_memory <=> o.total_memory }
-    when 'bw'       then Relay.order(measured_bandwith: :desc)
+    when 'bw'       then Relay.order(measured_bandwidth: :desc)
     else
       Relay.order(:public)
     end

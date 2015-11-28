@@ -18,7 +18,7 @@
   %li
     = "loadbalancer: #{@relays.where(lb: true).count}"
   %li
-    = "public relay tx bw: #{RelayRegister::Bandwith.normalize(@public_relays.map{|r| r.tx }.inject{|sum,x| sum + x })}"
+    = "public relay tx bw: #{RelayRegister::Bandwidth.normalize(@public_relays.map{|r| r.tx }.inject{|sum,x| sum + x })}"
 
 - if @group
   - @relays.group_by{ |r| @subnet_tree.search(r.ip)[:name] }.each do |asn, relays|
@@ -76,16 +76,16 @@
               - rescue
                 = ""
             -# tx
-            %td= RelayRegister::Bandwith.normalize(relay.tx)
+            %td= RelayRegister::Bandwidth.normalize(relay.tx)
             -# rx
-            %td= RelayRegister::Bandwith.normalize(relay.rx)
+            %td= RelayRegister::Bandwidth.normalize(relay.rx)
             %td
               %a{ href: url("/relay/#{relay.id}/edit"), class: 'action' } edit
               %a{ href: url("/relay/#{relay.id}/delete"), class: 'action' } delete
         %tr
           %td{colspan: 8 } expected public network streaming capacity
-          %td= RelayRegister::Bandwith.normalize(relays.map{|r| r.tx }.inject{|sum,x| sum + x })
-          %td= RelayRegister::Bandwith.normalize(relays.map{|r| r.rx }.inject{|sum,x| sum + x })
+          %td= RelayRegister::Bandwidth.normalize(relays.map{|r| r.tx }.inject{|sum,x| sum + x })
+          %td= RelayRegister::Bandwidth.normalize(relays.map{|r| r.rx }.inject{|sum,x| sum + x })
           %td
 
 - else
@@ -141,14 +141,14 @@
             - rescue
               = ""
           -# tx
-          %td= RelayRegister::Bandwith.normalize(relay.tx)
+          %td= RelayRegister::Bandwidth.normalize(relay.tx)
           -# rx
-          %td= RelayRegister::Bandwith.normalize(relay.rx)
+          %td= RelayRegister::Bandwidth.normalize(relay.rx)
           %td
             %a{ href: url("/relay/#{relay.id}/edit"), class: 'action' } edit
             %a{ href: url("/relay/#{relay.id}/delete"), class: 'action' } delete
       %tr
         %td{colspan: 8 } expected public network streaming capacity
-        %td= RelayRegister::Bandwith.normalize(@relays.map{|r| r.tx }.inject{|sum,x| sum + x })
-        %td= RelayRegister::Bandwith.normalize(@relays.map{|r| r.rx }.inject{|sum,x| sum + x })
+        %td= RelayRegister::Bandwidth.normalize(@relays.map{|r| r.tx }.inject{|sum,x| sum + x })
+        %td= RelayRegister::Bandwidth.normalize(@relays.map{|r| r.rx }.inject{|sum,x| sum + x })
         %td

@@ -11,24 +11,24 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20151124153155) do
+ActiveRecord::Schema.define(version: 20151128154156) do
 
-  create_table "bandwiths", force: :cascade do |t|
+  create_table "bandwidths", force: :cascade do |t|
     t.integer  "relay_id"
-    t.string   "destination",      limit: 255
+    t.string   "destination"
     t.text     "iperf"
-    t.boolean  "at_the_same_time",             default: false
-    t.boolean  "is_deleted",                   default: false
+    t.boolean  "at_the_same_time", default: false
+    t.boolean  "is_deleted",       default: false
     t.datetime "created_at"
     t.datetime "updated_at"
   end
 
   create_table "relays", force: :cascade do |t|
-    t.string   "ip",                limit: 255
-    t.string   "mac",               limit: 255
-    t.string   "hostname",          limit: 255
-    t.string   "master",            limit: 255
-    t.string   "measured_bandwith", limit: 255
+    t.string   "ip"
+    t.string   "mac"
+    t.string   "hostname"
+    t.string   "master"
+    t.string   "measured_bandwidth"
     t.text     "contact"
     t.text     "ip_config"
     t.text     "disk_size"
@@ -38,9 +38,9 @@ ActiveRecord::Schema.define(version: 20151124153155) do
     t.datetime "created_at"
     t.datetime "updated_at"
     t.boolean  "public"
-    t.integer  "dns_priority",                  default: 0
-    t.boolean  "cm_deploy",                     default: true
-    t.boolean  "lb",                            default: false
+    t.integer  "dns_priority",       default: 0
+    t.boolean  "cm_deploy",          default: true
+    t.boolean  "lb",                 default: false
   end
 
   create_table "relays_tags", id: false, force: :cascade do |t|
@@ -49,7 +49,7 @@ ActiveRecord::Schema.define(version: 20151124153155) do
   end
 
   create_table "tags", force: :cascade do |t|
-    t.string   "name",       limit: 255
+    t.string   "name"
     t.datetime "created_at"
     t.datetime "updated_at"
   end

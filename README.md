@@ -33,9 +33,9 @@ The API expects the following object resources in JSON format:
 
 `data` needs to be `AES-256-CBC` encrypted and Base64 encoded.
 
-### Measuring bandwith
+### Measuring bandwidth
 
-To send some bandwith data use `/register/bandwith` path and POST
+To send some bandwidth data use `/register/bandwidth` path and POST
 JSON in the following format:
 
 ```

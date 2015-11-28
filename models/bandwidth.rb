@@ -1,4 +1,4 @@
-class Bandwith < ActiveRecord::Base
+class Bandwidth < ActiveRecord::Base
   belongs_to :relay
 
   scope :default, -> { where(is_deleted: false) }

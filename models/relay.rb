@@ -2,7 +2,7 @@ require 'ipaddr'
 
 class Relay < ActiveRecord::Base
 
-  has_many :bandwiths
+  has_many :bandwidths
   has_and_belongs_to_many :tags, -> { uniq }
   before_save :default_master
 
@@ -75,7 +75,7 @@ class Relay < ActiveRecord::Base
 
   def rx
     sum      = 0.0
-    bw_tests = bandwiths.where( at_the_same_time: false)
+    bw_tests = bandwidths.where( at_the_same_time: false)
 
     bw_tests.each do |bw|
       sum += bw.rx
@@ -86,7 +86,7 @@ class Relay < ActiveRecord::Base
 
   def tx
     sum = 0.0
-    bw_tests = bandwiths.where(at_the_same_time: false)
+    bw_tests = bandwidths.where(at_the_same_time: false)
 
     bw_tests.each do |bw|
       sum += bw.tx

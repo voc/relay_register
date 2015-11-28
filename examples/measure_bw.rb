@@ -21,7 +21,7 @@ def encrypt(data, password, iv)
 end
 
 # Please change me…
-uri            = URI('http://127.0.0.1:4567/31c3/register/register/bandwith')
+uri            = URI('http://127.0.0.1:4567/31c3/register/register/bandwidth')
 api_key        = 'möpmöp'
 encryption_key = 'todeskey'
 

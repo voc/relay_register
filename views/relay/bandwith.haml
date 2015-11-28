@@ -1,4 +1,4 @@
-%h2= "Bandwith tests #{@relay.hostname}"
+%h2= "Bandwidth tests #{@relay.hostname}"
 
 - @relay_bw.each do |date, data|
   %h3= date
@@ -22,5 +22,5 @@
             %td= bw.destination
             %td
               %a{ href: "https://www.peeringdb.com/private/participant_list.php?s_name=&s_asn=#{as[:asn]}" }= as[:name]
-            %td= Bandwith.normalize(bw.tx)
-            %td= Bandwith.normalize(bw.rx)
+            %td= Bandwidth.normalize(bw.tx)
+            %td= Bandwidth.normalize(bw.rx)

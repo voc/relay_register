@@ -4,27 +4,33 @@ class Bandwith < ActiveRecord::Base
   scope :default, -> { where(is_deleted: false) }
 
   def tx
-    split_iperf.each do |iperf|
-      split = iperf.split(/\n/)[0].split(',')
+    # TODO: do not catch exception just handle it the right way
+    begin
+      split_iperf.each do |iperf|
+        split = iperf.split(/\n/)[0].split(',')
 
-      if split[3] =~ /#{destination}/
-        return split[8].to_i
+        if split[3] =~ /#{destination}/
+          return split[8].to_i
+        end
       end
+    rescue
+      0
     end
-
-    0
   end
 
   def rx
-    split_iperf.each do |iperf|
-      split = iperf.split(/\n/)[1].split(',')
+    # TODO: do not catch exception just handle it the right way
+    begin
+      split_iperf.each do |iperf|
+        split = iperf.split(/\n/)[1].split(',')
 
-      if split[3] =~ /#{destination}/
-        return split[8].to_i
+        if split[3] =~ /#{destination}/
+          return split[8].to_i
+        end
       end
+    rescue
+      0
     end
-
-    0
   end
 
   def self.normalize(nr)

@@ -25,7 +25,8 @@ class RelayRegister
                           "memory: #{relay.total_memory}, "\
                           "disk space: #{relay.free_space}, "\
                           "network interfaces: #{relay.interfaces.count} - "\
-                          "https://c3voc.de/31c3/register/relay/#{relay.id}"
+                          "https://c3voc.de/32c3/register/relay/#{relay.id}"
+                          # TODO: add setting for base url
       hash
     end
 

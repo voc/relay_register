@@ -136,11 +136,31 @@ class Relay < ActiveRecord::Base
     read_attribute(:hostname).chomp
   end
 
+  # Check relay for spezific ip address
+  #
+  # @param ip [IPAddr] you are looking for
+  # @return [Boolean]
+  def has_ip?(ip)
+    ips.include?(ip)
+  end
+
   # Return maximun of all defined priorities
   #
   # @return max_dns_priority [Fixnum]
   def self.max_dns_priority
     Relay.all.map(&:dns_priority).max
+  end
+
+  # Search relay by ip address
+  #
+  # @param ip [IPAddr] relay ip you are looking for
+  # @return [Relay] relay or nil
+  def self.find_by_ip(ip)
+    Relay.all.each do |relay|
+      return relay if relay.has_ip?(ip)
+    end
+
+    nil
   end
 
   protected

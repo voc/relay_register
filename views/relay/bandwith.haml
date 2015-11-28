@@ -4,6 +4,7 @@
   %h3= date
   %table{border: true}
     %thead
+      %th hostname
       %th destination
       %th asn
       %th tx
@@ -13,6 +14,11 @@
         - unless bw.at_the_same_time
           - as = @subnet_tree.search(bw.destination)
           %tr{ title: "#{as[:name]}" }
+            - if relay = Relay.find_by_ip(bw.destination)
+              %td
+                %a{href: url("/relay/#{relay.id}")}= relay.hostname
+            - else
+              %td
             %td= bw.destination
             %td
               %a{ href: "https://www.peeringdb.com/private/participant_list.php?s_name=&s_asn=#{as[:asn]}" }= as[:name]

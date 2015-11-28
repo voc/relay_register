@@ -134,16 +134,18 @@ get '/relay/:id' do
 end
 
 # Manage Relays
-get /\/relay\/\d+\/bandwidth|bandwith/ do
-  protected!
+['/relay/:id/bandwidth', '/relay/:id/bandwith'].each do |path|
+  get path do
+    protected!
 
-  @relay       = Relay.find(params[:id])
-  @subnet_tree = settings.subnet_tree
-  if @relay.bandwidths.count != 0
-    @relay_bw = Hash[@relay.bandwidths.group_by{ |r| r.created_at }.sort_by{ |k, v| k }.reverse]
+    @relay       = Relay.find(params[:id])
+    @subnet_tree = settings.subnet_tree
+    if @relay.bandwidths.count != 0
+      @relay_bw = Hash[@relay.bandwidths.group_by{ |r| r.created_at }.sort_by{ |k, v| k }.reverse]
+    end
+
+    haml :'relay/bandwidth'
   end
-
-  haml :'relay/bandwidth'
 end
 
 get '/relay/:id/delete' do
@@ -225,36 +227,38 @@ post '/register' do
   end
 end
 
-post '/register/bandwidth' do
-  content_type :json
-  data = parse_request_body(request.body.read)
+['/register/bandwidth', '/register/bandwith'].each do |path|
+  post path do
+    content_type :json
+    data = parse_request_body(request.body.read)
 
-  if api_key_valid?(data['api_key']) && data['raw_data']['measures'] != nil
-    relay = new_relay?(request.ip, mac = extract_first_interface_mac(data['raw_data']['ip_config']))
+    if api_key_valid?(data['api_key']) && data['raw_data']['measures'] != nil
+      relay = new_relay?(request.ip, mac = extract_first_interface_mac(data['raw_data']['ip_config']))
 
-    # Create new bw entry for each pf destination
-    data['raw_data']['measures']['single_destinations'].each do |dest, iperf|
+      # Create new bw entry for each pf destination
+      data['raw_data']['measures']['single_destinations'].each do |dest, iperf|
+        Bandwidth.create(
+          relay: relay,
+          iperf: iperf,
+          destination: dest,
+          created_at: Time.at(data['raw_data']['time'])
+        )
+      end
+
+      # Create bw parallel test item
+      md = data['raw_data']['measures']['multiple_destinations']
       Bandwidth.create(
         relay: relay,
-        iperf: iperf,
-        destination: dest,
+        iperf: md['iperf'],
+        at_the_same_time: true,
+        destination: md['destinations'].join(','),
         created_at: Time.at(data['raw_data']['time'])
       )
+
+      status 200
+    else
+      status 401
     end
-
-    # Create bw parallel test item
-    md = data['raw_data']['measures']['multiple_destinations']
-    Bandwidth.create(
-      relay: relay,
-      iperf: md['iperf'],
-      at_the_same_time: true,
-      destination: md['destinations'].join(','),
-      created_at: Time.at(data['raw_data']['time'])
-    )
-
-    status 200
-  else
-    status 401
   end
 end
 

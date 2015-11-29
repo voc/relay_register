@@ -66,6 +66,8 @@ end
 get '/ipaddresses' do
   protected!
 
+  content_type :txt
+
   v4 = []
   v6 = []
   Relay.all.each do |relay|
@@ -81,11 +83,13 @@ get '/ipaddresses' do
     end
   end
 
-  [ v4 + v6 ].join(",<br>")
+  [ v4 + v6 ].join(",")
 end
 
 get '/haproxybackends' do
   protected!
+
+  content_type :txt
 
   @hls, @relive, @webm, @loadbalancer, @local, @usa = [], [], [], [], [], []
 

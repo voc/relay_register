@@ -1,0 +1,143 @@
+# local
+backend hls_playlist_local
+    balance roundrobin
+    option forwardfor
+<% @local.each do |relay| %>
+    server <%= relay.hostname %> <%= relay.hostname %>:80 redir http://<%= relay.hostname %>:80  weight <%= relay.dns_priority %>
+<% end %>
+
+backend icecast_local
+    balance roundrobin
+    option forwardfor
+<% @local.each do |relay| %>
+    server <%= relay.hostname %> <%= relay.hostname %>:80 redir http://<%= relay.hostname %>:8000  weight <%= relay.dns_priority %>
+<% end %>
+
+backend hls_fragment_local
+    balance roundrobin
+    option forwardfor
+<% @local.each do |relay| %>
+    server <%= relay.hostname %> <%= relay.hostname %>:80 redir http://<%= relay.hostname %>:80  weight <%= relay.dns_priority %>
+<% end %>
+
+
+# usa
+backend hls_playlist_usa
+    balance roundrobin
+    option forwardfor
+<% @usa.each do |relay| %>
+    server <%= relay.hostname %> <%= relay.hostname %>:80 redir http://<%= relay.hostname %>:80  weight <%= relay.dns_priority %>
+<% end %>
+
+backend icecast_usa
+    balance roundrobin
+    option forwardfor
+<% @usa.each do |relay| %>
+    server <%= relay.hostname %> <%= relay.hostname %>:80 redir http://<%= relay.hostname %>:8000  weight <%= relay.dns_priority %>
+<% end %>
+
+backend hls_fragment_usa
+    balance roundrobin
+    option forwardfor
+<% @usa.each do |relay| %>
+    server <%= relay.hostname %> <%= relay.hostname %>:80 redir http://<%= relay.hostname %>:80  weight <%= relay.dns_priority %>
+<% end %>
+
+
+# Internetz
+backend hls_fragment
+    balance roundrobin
+    option forwardfor
+<% @hls.each do |relay| %>
+    server <%= relay.hostname %> <%= relay.hostname %>:80 redir http://<%= relay.hostname %>:80  weight <%= relay.dns_priority %>
+<% end %>
+
+backend icecast
+    balance roundrobin
+    option forwardfor
+<% @webm.each do |relay| %>
+    server <%= relay.hostname %> <%= relay.hostname %>:80 redir http://<%= relay.hostname %>:80  weight <%= relay.dns_priority %>
+<% end %>
+
+backend hls_playlist
+    balance roundrobin
+    option forwardfor
+<% @hls.each do |relay| %>
+    server <%= relay.hostname %> <%= relay.hostname %>:80 redir http://<%= relay.hostname %>:80  weight <%= relay.dns_priority %>
+<% end %>
+
+
+# https
+backend hls_fragment_https
+    balance roundrobin
+    option forwardfor
+<% @hls.each do |relay| %>
+    server <%= relay.hostname %> <%= relay.hostname %>:443 redir https://<%= relay.hostname %>:443  weight <%= relay.dns_priority %>
+<% end %>
+
+backend icecast_https
+    http-request add-header Access-Control-Allow-Origin streaming.media.ccc.de
+    balance roundrobin
+    option forwardfor
+<% @webm.each do |relay| %>
+    server <%= relay.hostname %> <%= relay.hostname %>:443 redir https://<%= relay.hostname %>:443  weight <%= relay.dns_priority %>
+<% end %>
+
+backend hls_playlist_https
+    balance roundrobin
+    option forwardfor
+<% @hls.each do |relay| %>
+    server <%= relay.hostname %> <%= relay.hostname %>:443 redir https://<%= relay.hostname %>:443  weight <%= relay.dns_priority %>
+<% end %>
+
+backend hls_playlist_local_https
+    balance roundrobin
+    option forwardfor
+<% @local.each do |relay| %>
+    server <%= relay.hostname %> <%= relay.hostname %>:443 redir https://<%= relay.hostname %>:443  weight <%= relay.dns_priority %>
+<% end %>
+
+backend icecast_local_https
+    balance roundrobin
+    option forwardfor
+<% @local.each do |relay| %>
+    server <%= relay.hostname %> <%= relay.hostname %>:443 redir https://<%= relay.hostname %>:443  weight <%= relay.dns_priority %>
+<% end %>
+
+backend hls_fragment_local_https
+    balance roundrobin
+    option forwardfor
+<% @local.each do |relay| %>
+    server <%= relay.hostname %> <%= relay.hostname %>:443 redir https://<%= relay.hostname %>:443  weight <%= relay.dns_priority %>
+<% end %>
+
+backend hls_playlist_usa_https
+    balance roundrobin
+    option forwardfor
+<% @usa.each do |relay| %>
+    server <%= relay.hostname %> <%= relay.hostname %>:443 redir https://<%= relay.hostname %>:443  weight <%= relay.dns_priority %>
+<% end %>
+
+backend icecast_usa_https
+    balance roundrobin
+    option forwardfor
+<% @usa.each do |relay| %>
+    server <%= relay.hostname %> <%= relay.hostname %>:443 redir https://<%= relay.hostname %>:443  weight <%= relay.dns_priority %>
+<% end %>
+
+backend hls_fragment_usa_https
+    balance roundrobin
+    option forwardfor
+<% @usa.each do |relay| %>
+    server <%= relay.hostname %> <%= relay.hostname %>:443 redir https://<%= relay.hostname %>:443  weight <%= relay.dns_priority %>
+<% end %>
+
+
+# frontend
+backend streaming_website
+    balance roundrobin
+    option forwardfor
+    http-request set-header X-Custom-Header %[url]
+<% @loadbalancer.each do |relay| %>
+    server <%= relay.hostname %> <%= relay.hostname %>:8443 weight <%= relay.dns_priority %> ssl verify none
+<% end %>

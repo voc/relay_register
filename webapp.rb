@@ -84,6 +84,30 @@ get '/ipaddresses' do
   [ v4 + v6 ].join(",<br>")
 end
 
+get '/haproxybackends' do
+  protected!
+
+  @hls, @relive, @webm, @loadbalancer, @local, @usa = [], [], [], [], [], []
+
+  Relay.all.each do |relay|
+    next if relay.lb == false && relay.public == false
+    @loadbalancer << relay if relay.lb
+    @webm         << relay if relay.tags.include?(Tag.where(name: 'webm').first)
+    @relive       << relay if relay.tags.include?(Tag.where(name: 'relive').first)
+    @hls          << relay if relay.tags.include?(Tag.where(name: 'hls').first)
+
+    @local << relay if relay.tags.include?(Tag.where(name: 'local').first)
+    @usa   << relay if relay.tags.include?(Tag.where(name: 'usa').first)
+  end
+
+  # remove local und usa relays from normal relays
+  [@hls, @relive, @webm].each do |tag|
+    tag = tag - @usa - @local
+  end
+
+  erb :haproxybackends
+end
+
 get '/relays' do
   protected!
 

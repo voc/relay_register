@@ -105,7 +105,7 @@ class Relay < ActiveRecord::Base
       %w{ipv4 ipv6}.each do |ip_version|
         interface["#{ip_version}"].compact.each do |ip|
           addr = IPAddr.new(ip.gsub(/\/\d+/, ''))
-          unless addr.to_s =~ /^(fe80:|127\.0\.0\.|::1)/
+          unless addr.to_s =~ /^(fe80:|(fd|fc)[a-fA-F0-9]{2}:|127\.0\.0\.|::1)/
             ips << addr
           end
         end

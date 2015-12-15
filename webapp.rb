@@ -136,6 +136,7 @@ get '/relays' do
 
     relays[relay.hostname]['dns_priority'] = relay.dns_priority
     relays[relay.hostname]['master']       = relay.master_hostname
+    relays[relay.hostname]['loadbalancer'] = relay.lb
 
     relays[relay.hostname]['ips'] = {}
     relays[relay.hostname]['ips']['register'] = relay.ip

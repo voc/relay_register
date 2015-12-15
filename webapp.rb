@@ -71,7 +71,14 @@ get '/ipaddresses' do
   v4 = []
   v6 = []
   Relay.all.each do |relay|
-    relay.ips.each do |ip|
+    ips = []
+    if relay.ips.count == 0
+      ips << relay.ip
+    else
+      ips = relay.ips
+    end
+
+    ips.each do |ip|
       if ip.ipv6?
         v6 << "'#{relay.hostname.chomp}': '#{ip.to_s}'"
       else
@@ -81,6 +88,7 @@ get '/ipaddresses' do
         v4 << "'#{relay.hostname.chomp}': '#{ip.to_s}'"
       end
     end
+
   end
 
   [ v4 + v6 ].join(",")

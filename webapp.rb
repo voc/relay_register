@@ -91,7 +91,7 @@ get '/ipaddresses' do
 
   end
 
-  [ v4 + v6 ].join(",")
+  [ v4 + v6 ].join(",\n")
 end
 
 get '/haproxybackends' do

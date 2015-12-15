@@ -71,24 +71,13 @@ get '/ipaddresses' do
   v4 = []
   v6 = []
   Relay.all.each do |relay|
-    ips = []
-    if relay.ips.count == 0
-      ips << relay.ip
-    else
-      ips = relay.ips
-    end
-
-    ips.each do |ip|
+    relay.public_ips.each do |ip|
       if ip.ipv6?
         v6 << "'#{relay.hostname.chomp}': '#{ip.to_s}'"
       else
-        next if [IPAddr.new("10.0.0.0/8"),
-                 IPAddr.new("172.16.0.0/12"),
-                 IPAddr.new("192.168.0.0/16")].any? {|i| i.include? ip}
         v4 << "'#{relay.hostname.chomp}': '#{ip.to_s}'"
       end
     end
-
   end
 
   [ v4 + v6 ].join(",\n")

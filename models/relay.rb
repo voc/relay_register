@@ -115,6 +115,28 @@ class Relay < ActiveRecord::Base
     ips
   end
 
+  # Return all configured public ips
+  #
+  # @return [Array<IPAdddr>]
+  def public_ips
+    public_ips = []
+
+    ips.each do |ip|
+      if ip.ipv6?
+        public_ips << ip
+      else
+        next if [IPAddr.new("10.0.0.0/8"),
+                 IPAddr.new("172.16.0.0/12"),
+                 IPAddr.new("192.168.0.0/16")].any? {|i| i.include? ip}
+        public_ips << ip
+      end
+    end
+    #
+    public_ips << IPAddr.new(ip) if public_ips.count == 0
+
+    public_ips
+  end
+
   # Get shorten fqdn hostname
   #
   # @return hostname [String] shorten

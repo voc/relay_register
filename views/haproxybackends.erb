@@ -180,7 +180,6 @@ backend hls_playlist_usa_http
     bind-process 1
     balance roundrobin
     option forwardfor
-    server us2.1und1.c3voc.de us2.1und1.c3voc.de:80 redir http://us2.1und1.c3voc.de:80  weight 50
 <% @usa.each do |relay| %>
     server <%= relay.hostname %> <%= relay.hostname %>:80 redir http://<%= relay.hostname %>:80  weight <%= relay.dns_priority %>
 <% end %>
@@ -205,9 +204,8 @@ backend icecast_usa_http
     bind-process 1
     balance roundrobin
     option forwardfor
-    server us2.1und1.c3voc.de us2.1und1.c3voc.de:80 redir http://us2.1und1.c3voc.de:8000  weight 50
 <% @usa.each do |relay| %>
-    server <%= relay.hostname %> <%= relay.hostname %>:80 redir http://<%= relay.hostname %>:80  weight <%= relay.dns_priority %>
+    server <%= relay.hostname %> <%= relay.hostname %>:8000 redir http://<%= relay.hostname %>:8000  weight <%= relay.dns_priority %>
 <% end %>
 
 # Internetz

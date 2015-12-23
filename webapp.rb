@@ -88,12 +88,12 @@ get '/haproxybackends' do
 
   content_type :txt
 
-  @hls, @relive, @webm, @loadbalancer, @local, @usa = [], [], [], [], [], []
+  @hls, @relive, @icecast, @loadbalancer, @local, @usa = [], [], [], [], [], []
 
   Relay.all.each do |relay|
     next if relay.lb == false && relay.public == false
     @loadbalancer << relay if relay.lb
-    @icecast         << relay if relay.tags.include?(Tag.where(name: 'icecast').first)
+    @icecast      << relay if relay.tags.include?(Tag.where(name: 'icecast').first)
     @relive       << relay if relay.tags.include?(Tag.where(name: 'relive').first)
     @hls          << relay if relay.tags.include?(Tag.where(name: 'hls').first)
 
@@ -102,9 +102,9 @@ get '/haproxybackends' do
   end
 
   # remove local und usa relays from normal relays
-  [@hls, @relive, @icecast].each do |tag|
-    tag = tag - @usa - @local
-  end
+  @hls = (@hls - @usa) - @local
+  @relive = (@relive - @usa) - @local
+  @icecast = (@icecast - @usa) - @local
 
   erb :haproxybackends
 end

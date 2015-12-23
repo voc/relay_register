@@ -1,19 +1,157 @@
+global
+    nbproc  {{ haproxy_nbproc | default('2') }}
+    chroot  /usr/share/haproxy
+    pidfile /run/haproxy.pid
+    maxconn 8192
+    ulimit-n 65536
+    user    haproxy
+    group   haproxy
+    # stats sockets
+{% for nr in range(1, haproxy_nbproc+1) %}
+    stats socket /var/run/haproxy_stats_{{ nr }}.sock level operator process {{ nr}}
+{% endfor %}
+    daemon
+    log     /dev/log local0 notice
+    # tls
+    ssl-default-bind-options no-sslv3 force-tlsv12
+    ssl-default-bind-ciphers ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES256-GCM-SHA384:DHE-RSA-AES128-GCM-SHA256:DHE-DSS-AES128-GCM-SHA256:kEDH+AESGCM:ECDHE-RSA-AES128-SHA256:ECDHE-ECDSA-AES128-SHA256:ECDHE-RSA-AES128-SHA:ECDHE-ECDSA-AES128-SHA:ECDHE-RSA-AES256-SHA384:ECDHE-ECDSA-AES256-SHA384:ECDHE-RSA-AES256-SHA:ECDHE-ECDSA-AES256-SHA:DHE-RSA-AES128-SHA256:DHE-RSA-AES128-SHA:DHE-DSS-AES128-SHA256:DHE-RSA-AES256-SHA256:DHE-DSS-AES256-SHA:DHE-RSA-AES256-SHA:!aNULL:!eNULL:!EXPORT:!DES:!RC4:!3DES:!MD5:!PSK
+
+defaults
+    mode    http
+    # enable some usefull options
+    option  httplog
+    option  dontlognull
+    option  http-server-close
+    option  abortonclose
+    # configure timeouts
+    timeout http-request 5s # avoid slowloris
+    timeout connect 5s
+    timeout server  10s
+    timeout client  30s
+    # constum error filter
+    errorfile 500 /srv/nginx/htdocs/50x.html
+    errorfile 502 /srv/nginx/htdocs/50x.html
+    errorfile 503 /srv/nginx/htdocs/50x.html
+
+frontend icecast_and_nginx_hls_http
+    bind-process 1
+    bind {{ ansible_default_ipv4.address }}:80
+    bind {{ ansible_default_ipv6.address }}:80
+
+    # add special header for protocol version
+    http-request add-header X-Proto http  if !{ ssl_fc }
+
+    # tag request for the right destination server
+    acl hls_playlist         path_end   -i .m3u8
+    acl is_relive            path_sub   -i relive thumb.jpg crossdomain.xml .mp4
+    acl hls_fragment         path_end   -i .ts
+    acl icecast              path_end   -i .webm .opus .mp3 .ogg .ogv .oga
+    acl is_faq               hdr(host)  -i faq.c3voc.de
+    acl is_cdn               hdr(host)  -i cdn.c3voc.de
+    acl is_streaming_website hdr(host)  -i streaming.media.ccc.de -i www.stream.c3voc.de -i faq.c3voc.de
+    # ip address matching
+    acl is_sw_preview        src        195.54.164.163
+    acl is_usa               src        -f /etc/haproxy/usa_subnetworks.txt
+    acl is_local             src        151.217.0.0/16 94.45.224.0/19 2001:67c:20a1::/48 # TODO: update subnetworks
+    # return 403 if hostname or defined file extensions are not matching
+    http-request deny        unless is_cdn or is_streaming_website
+    http-request deny        unless hls_playlist or hls_fragment or icecast or is_streaming_website or is_relive
+
+    # Backend usage
+    # local relay
+    use_backend hls_relive_local_http    if is_local is_relive
+    use_backend hls_fragment_local_http  if is_local hls_fragment
+    use_backend hls_playlist_local_http  if is_local hls_playlist
+    use_backend icecast_local_http       if is_local icecast
+
+    # usa relays
+    use_backend hls_relive_usa_http      if is_usa is_relive
+    use_backend hls_fragment_usa_http    if is_usa hls_fragment
+    use_backend hls_playlist_usa_http    if is_usa hls_playlist
+    use_backend icecast_usa_http         if is_usa icecast
+
+    # use remote relays
+    use_backend pre_streaming_website_http if is_streaming_website is_sw_preview !is_faq
+    use_backend streaming_website_http   if is_streaming_website
+    use_backend hls_relive_http          if is_relive
+    use_backend hls_playlist_http        if hls_playlist
+    use_backend hls_fragment_http        if hls_fragment
+    use_backend icecast_http             if icecast
+
+frontend icecast_and_nginx_hls_https
+    bind-process {{ range(2, haproxy_nbproc+1) | join(' ') }}
+    bind {{ ansible_default_ipv6.address }}:443 ssl crt /etc/ssl/certs/haproxy_streaming.media.ccc.de.pem crt /etc/ssl/certs/haproxy_cdn.c3voc.de.pem crt /etc/ssl/certs/haproxy_faq.c3voc.de.pem # <cert+privkey+intermediate+dhparam>
+    bind {{ ansible_default_ipv4.address }}:443 ssl crt /etc/ssl/certs/haproxy_streaming.media.ccc.de.pem crt /etc/ssl/certs/haproxy_cdn.c3voc.de.pem crt /etc/ssl/certs/haproxy_faq.c3voc.de.pem # <cert+privkey+intermediate+dhparam>
+
+    # add special header for protocol version
+    http-request add-header X-Proto https if  { ssl_fc }
+
+    # tag request for the right destination server
+    acl hls_playlist         path_end   -i .m3u8
+    acl is_relive            path_sub   -i relive thumb.jpg crossdomain.xml .mp4
+    acl hls_fragment         path_end   -i .ts
+    acl icecast              path_end   -i .webm .opus .mp3 .ogg .ogv .oga
+    acl is_cdn               hdr(host)  -i cdn.c3voc.de
+    acl is_faq               hdr(host)  -i faq.c3voc.de
+    acl is_streaming_website hdr(host)  -i streaming.media.ccc.de -i www.stream.c3voc.de -i faq.c3voc.de
+    # ip address matching
+    acl is_sw_preview        src        195.54.164.163
+    acl is_usa               src        -f /etc/haproxy/usa_subnetworks.txt
+    acl is_local             src        151.217.0.0/16 94.45.224.0/19 2001:67c:20a1::/48 # TODO: update subnetworks
+    # return 403 if hostname or defined file extensions are not matching
+    http-request deny        unless is_cdn or is_streaming_website
+    http-request deny        unless hls_playlist or hls_fragment or icecast or is_streaming_website or is_relive
+
+    # Backend usage
+    # local relay
+    use_backend hls_relive_local_https    if is_local is_relive    { ssl_fc }
+    use_backend hls_fragment_local_https  if is_local hls_fragment { ssl_fc }
+    use_backend hls_playlist_local_https  if is_local hls_playlist { ssl_fc }
+    use_backend icecast_local_https       if is_local icecast      { ssl_fc }
+
+    # usa relays
+    use_backend hls_relive_usa_https      if is_usa is_relive      { ssl_fc }
+    use_backend hls_fragment_usa_https    if is_usa hls_fragment   { ssl_fc }
+    use_backend hls_playlist_usa_https    if is_usa hls_playlist   { ssl_fc }
+    use_backend icecast_usa_https         if is_usa icecast        { ssl_fc }
+
+    # use remote relays
+    use_backend pre_streaming_website_https if is_streaming_website is_sw_preview !is_faq         { ssl_fc }
+    use_backend streaming_website_https   if is_streaming_website  { ssl_fc }
+    use_backend hls_relive_https          if is_relive             { ssl_fc }
+    use_backend hls_playlist_https        if hls_playlist          { ssl_fc }
+    use_backend hls_fragment_https        if hls_fragment          { ssl_fc }
+    use_backend icecast_https             if icecast               { ssl_fc }
+
+
+# enable statistics and basic admin support for localhost
+{% for nr in range(1, haproxy_nbproc+1) %}
+listen stats_process_{{ nr }}
+    bind-process {{ nr }}
+    bind 127.0.0.1:910{{ nr }}
+    mode http
+    stats enable
+    stats uri     /admin?stats
+    stats refresh 10s
+    stats admin   if LOCALHOST
+
+{% endfor %}
+
+# ######## #
+# BACKENDs #
+# ######## #
+
 # local
-backend hls_playlist_local
+backend hls_playlist_local_http
+    bind-process 1
     balance roundrobin
     option forwardfor
 <% @local.each do |relay| %>
     server <%= relay.hostname %> <%= relay.hostname %>:80 redir http://<%= relay.hostname %>:80  weight <%= relay.dns_priority %>
 <% end %>
 
-backend icecast_local
-    balance roundrobin
-    option forwardfor
-<% @local.each do |relay| %>
-    server <%= relay.hostname %> <%= relay.hostname %>:80 redir http://<%= relay.hostname %>:8000  weight <%= relay.dns_priority %>
-<% end %>
-
-backend hls_fragment_local
+backend hls_fragment_local_http
+    bind-process 1
     balance roundrobin
     option forwardfor
 <% @local.each do |relay| %>
@@ -21,83 +159,130 @@ backend hls_fragment_local
 <% end %>
 
 
-# usa
-backend hls_playlist_usa
+backend hls_relive_local_http
+    bind-process 1
+    balance roundrobin
+    option forwardfor
+<% @local.each do |relay| %>
+    server <%= relay.hostname %> <%= relay.hostname %>:80 redir http://<%= relay.hostname %>:80  weight <%= relay.dns_priority %>
+<% end %>
+
+backend icecast_local_http
+    bind-process 1
+    balance roundrobin
+    option forwardfor
+<% @local.each do |relay| %>
+    server <%= relay.hostname %> <%= relay.hostname %>:8000 redir http://<%= relay.hostname %>:8000  weight <%= relay.dns_priority %>
+<% end %>
+
+# USA
+backend hls_playlist_usa_http
+    bind-process 1
+    balance roundrobin
+    option forwardfor
+    server us2.1und1.c3voc.de us2.1und1.c3voc.de:80 redir http://us2.1und1.c3voc.de:80  weight 50
+<% @usa.each do |relay| %>
+    server <%= relay.hostname %> <%= relay.hostname %>:80 redir http://<%= relay.hostname %>:80  weight <%= relay.dns_priority %>
+<% end %>
+
+backend hls_fragment_usa_http
+    bind-process 1
     balance roundrobin
     option forwardfor
 <% @usa.each do |relay| %>
     server <%= relay.hostname %> <%= relay.hostname %>:80 redir http://<%= relay.hostname %>:80  weight <%= relay.dns_priority %>
 <% end %>
 
-backend icecast_usa
-    balance roundrobin
-    option forwardfor
-<% @usa.each do |relay| %>
-    server <%= relay.hostname %> <%= relay.hostname %>:80 redir http://<%= relay.hostname %>:8000  weight <%= relay.dns_priority %>
-<% end %>
-
-backend hls_fragment_usa
+backend hls_relive_usa_http
+    bind-process 1
     balance roundrobin
     option forwardfor
 <% @usa.each do |relay| %>
     server <%= relay.hostname %> <%= relay.hostname %>:80 redir http://<%= relay.hostname %>:80  weight <%= relay.dns_priority %>
 <% end %>
 
+backend icecast_usa_http
+    bind-process 1
+    balance roundrobin
+    option forwardfor
+    server us2.1und1.c3voc.de us2.1und1.c3voc.de:80 redir http://us2.1und1.c3voc.de:8000  weight 50
+<% @usa.each do |relay| %>
+    server <%= relay.hostname %> <%= relay.hostname %>:80 redir http://<%= relay.hostname %>:80  weight <%= relay.dns_priority %>
+<% end %>
 
 # Internetz
-backend hls_fragment
+backend hls_playlist_http
+    bind-process 1
     balance roundrobin
     option forwardfor
 <% @hls.each do |relay| %>
     server <%= relay.hostname %> <%= relay.hostname %>:80 redir http://<%= relay.hostname %>:80  weight <%= relay.dns_priority %>
 <% end %>
 
-backend icecast
-    balance roundrobin
-    option forwardfor
-<% @webm.each do |relay| %>
-    server <%= relay.hostname %> <%= relay.hostname %>:80 redir http://<%= relay.hostname %>:80  weight <%= relay.dns_priority %>
-<% end %>
-
-backend hls_playlist
+backend hls_fragment_http
+    bind-process 1
     balance roundrobin
     option forwardfor
 <% @hls.each do |relay| %>
     server <%= relay.hostname %> <%= relay.hostname %>:80 redir http://<%= relay.hostname %>:80  weight <%= relay.dns_priority %>
+<% end %>
+
+
+backend hls_relive_http
+    bind-process 1
+    balance roundrobin
+    option forwardfor
+<% @relive.each do |relay| %>
+    server <%= relay.hostname %> <%= relay.hostname %>:80 redir http://<%= relay.hostname %>:80  weight <%= relay.dns_priority %>
+<% end %>
+
+backend icecast_http
+    bind-process 1
+    balance roundrobin
+    option forwardfor
+<% @icecast.each do |relay| %>
+    server <%= relay.hostname %> <%= relay.hostname %>:8000 redir http://<%= relay.hostname %>:8000  weight <%= relay.dns_priority %>
 <% end %>
 
 
 # https
-backend hls_fragment_https
+backend hls_playlist_https
+    bind-process {{ range(2, haproxy_nbproc+1) | join(' ') }}
     balance roundrobin
     option forwardfor
 <% @hls.each do |relay| %>
+    server <%= relay.hostname %> <%= relay.hostname %>:443 redir https://<%= relay.hostname %>:443  weight <%= relay.dns_priority %>
+<% end %>
+
+backend hls_fragment_https
+    bind-process {{ range(2, haproxy_nbproc+1) | join(' ') }}
+    balance roundrobin
+    option forwardfor
+<% @hls.each do |relay| %>
+    server <%= relay.hostname %> <%= relay.hostname %>:443 redir https://<%= relay.hostname %>:443  weight <%= relay.dns_priority %>
+<% end %>
+
+backend hls_relive_https
+    bind-process {{ range(2, haproxy_nbproc+1) | join(' ') }}
+    balance roundrobin
+    option forwardfor
+<% @relive.each do |relay| %>
     server <%= relay.hostname %> <%= relay.hostname %>:443 redir https://<%= relay.hostname %>:443  weight <%= relay.dns_priority %>
 <% end %>
 
 backend icecast_https
+    bind-process {{ range(2, haproxy_nbproc+1) | join(' ') }}
     http-request add-header Access-Control-Allow-Origin streaming.media.ccc.de
     balance roundrobin
     option forwardfor
-<% @webm.each do |relay| %>
+<% @icecast.each do |relay| %>
     server <%= relay.hostname %> <%= relay.hostname %>:443 redir https://<%= relay.hostname %>:443  weight <%= relay.dns_priority %>
 <% end %>
 
-backend hls_playlist_https
-    balance roundrobin
-    option forwardfor
-<% @hls.each do |relay| %>
-    server <%= relay.hostname %> <%= relay.hostname %>:443 redir https://<%= relay.hostname %>:443  weight <%= relay.dns_priority %>
-<% end %>
 
+# local
 backend hls_playlist_local_https
-    balance roundrobin
-    option forwardfor
-<% @local.each do |relay| %>
-    server <%= relay.hostname %> <%= relay.hostname %>:443 redir https://<%= relay.hostname %>:443  weight <%= relay.dns_priority %>
-<% end %>
-
-backend icecast_local_https
+    bind-process {{ range(2, haproxy_nbproc+1) | join(' ') }}
     balance roundrobin
     option forwardfor
 <% @local.each do |relay| %>
@@ -105,20 +290,33 @@ backend icecast_local_https
 <% end %>
 
 backend hls_fragment_local_https
+    bind-process {{ range(2, haproxy_nbproc+1) | join(' ') }}
     balance roundrobin
     option forwardfor
 <% @local.each do |relay| %>
     server <%= relay.hostname %> <%= relay.hostname %>:443 redir https://<%= relay.hostname %>:443  weight <%= relay.dns_priority %>
 <% end %>
 
-backend hls_playlist_usa_https
+backend hls_relive_local_https
+    bind-process {{ range(2, haproxy_nbproc+1) | join(' ') }}
     balance roundrobin
     option forwardfor
-<% @usa.each do |relay| %>
+<% @local.each do |relay| %>
     server <%= relay.hostname %> <%= relay.hostname %>:443 redir https://<%= relay.hostname %>:443  weight <%= relay.dns_priority %>
 <% end %>
 
-backend icecast_usa_https
+backend icecast_local_https
+    bind-process {{ range(2, haproxy_nbproc+1) | join(' ') }}
+    balance roundrobin
+    option forwardfor
+<% @local.each do |relay| %>
+    server <%= relay.hostname %> <%= relay.hostname %>:443 redir https://<%= relay.hostname %>:443  weight <%= relay.dns_priority %>
+<% end %>
+
+
+# USA
+backend hls_playlist_usa_https
+    bind-process {{ range(2, haproxy_nbproc+1) | join(' ') }}
     balance roundrobin
     option forwardfor
 <% @usa.each do |relay| %>
@@ -126,6 +324,23 @@ backend icecast_usa_https
 <% end %>
 
 backend hls_fragment_usa_https
+    bind-process {{ range(2, haproxy_nbproc+1) | join(' ') }}
+    balance roundrobin
+    option forwardfor
+<% @usa.each do |relay| %>
+    server <%= relay.hostname %> <%= relay.hostname %>:443 redir https://<%= relay.hostname %>:443  weight <%= relay.dns_priority %>
+<% end %>
+
+backend hls_relive_usa_https
+    bind-process {{ range(2, haproxy_nbproc+1) | join(' ') }}
+    balance roundrobin
+    option forwardfor
+<% @usa.each do |relay| %>
+    server <%= relay.hostname %> <%= relay.hostname %>:443 redir https://<%= relay.hostname %>:443  weight <%= relay.dns_priority %>
+<% end %>
+
+backend icecast_usa_https
+    bind-process {{ range(2, haproxy_nbproc+1) | join(' ') }}
     balance roundrobin
     option forwardfor
 <% @usa.each do |relay| %>
@@ -134,10 +349,68 @@ backend hls_fragment_usa_https
 
 
 # frontend
-backend streaming_website
+backend streaming_website_http
+    bind-process 1
     balance roundrobin
     option forwardfor
     http-request set-header X-Custom-Header %[url]
-<% @loadbalancer.each do |relay| %>
-    server <%= relay.hostname %> <%= relay.hostname %>:8443 weight <%= relay.dns_priority %> ssl verify none
-<% end %>
+    http-request set-header X-Real-IP %[src]
+{% if ansible_fqdn == 'lb1.fem.c3voc.de' %}
+    server lb1.fem.c3voc.de 127.0.0.1:8080 check maxconn 2048
+    server lb1.het.c3voc.de 46.4.3.195:8080 check backup maxconn 2048
+{% elif ansible_fqdn == 'live.dus.c3voc.de' %}
+    server lb1.het.c3voc.de 127.0.0.1:8080 check maxconn 2048
+{% elif ansible_fqdn == 'lb1.het.c3voc.de'%}
+    server lb1.het.c3voc.de 127.0.0.1:8080 check maxconn 2048
+    server lb1.fem.c3voc.de 141.24.40.53:8080 check backup maxconn 2048
+{% endif %}
+
+backend streaming_website_https
+    bind-process {{ range(2, haproxy_nbproc+1) | join(' ') }}
+    balance roundrobin
+    option forwardfor
+    http-request set-header X-Custom-Header %[url]
+    http-request set-header X-Real-IP %[src]
+{% if ansible_fqdn == 'lb1.fem.c3voc.de' %}
+    server lb1.fem.c3voc.de 127.0.0.1:8080 maxconn 2048
+    server lb1.het.c3voc.de 46.4.3.195:8080 backup maxconn 2048
+{% elif ansible_fqdn == 'live.dus.c3voc.de' %}
+    server lb1.het.c3voc.de 127.0.0.1:8080 maxconn 2048
+{% elif ansible_fqdn == 'lb1.het.c3voc.de'%}
+    server lb1.het.c3voc.de 127.0.0.1:8080 maxconn 2048
+    server lb1.fem.c3voc.de 141.24.40.53:8080 backup maxconn 2048
+{% endif %}
+    # check is disabled cause of multiple processes
+
+backend pre_streaming_website_http
+    bind-process 1
+    balance roundrobin
+    option forwardfor
+    http-request set-header X-Custom-Header pre.stream.c3voc.de
+    http-request set-header X-Real-IP %[src]
+{% if ansible_fqdn == 'lb1.fem.c3voc.de' %}
+    server lb1.fem.c3voc.de 127.0.0.1:8081 check maxconn 2048
+    server lb1.het.c3voc.de 46.4.3.195:8081 check backup maxconn 2048
+{% elif ansible_fqdn == 'live.dus.c3voc.de' %}
+    server lb1.het.c3voc.de 127.0.0.1:8081 check maxconn 2048
+{% elif ansible_fqdn == 'lb1.het.c3voc.de'%}
+    server lb1.het.c3voc.de 127.0.0.1:8081 check maxconn 2048
+    server lb1.fem.c3voc.de 141.24.40.53:8081 check backup maxconn 2048
+{% endif %}
+
+backend pre_streaming_website_https
+    bind-process {{ range(2, haproxy_nbproc+1) | join(' ') }}
+    balance roundrobin
+    option forwardfor
+    http-request set-header X-Custom-Header pre.stream.c3voc.de
+    http-request set-header X-Real-IP %[src]
+{% if ansible_fqdn == 'lb1.fem.c3voc.de' %}
+    server lb1.fem.c3voc.de 127.0.0.1:8081 maxconn 2048
+    server lb1.het.c3voc.de 46.4.3.195:8081 backup maxconn 2048
+{% elif ansible_fqdn == 'live.dus.c3voc.de' %}
+    server lb1.het.c3voc.de 127.0.0.1:8081 maxconn 2048
+{% elif ansible_fqdn == 'lb1.het.c3voc.de'%}
+    server lb1.het.c3voc.de 127.0.0.1:8081 maxconn 2048
+    server lb1.fem.c3voc.de 141.24.40.53:8081 backup maxconn 2048
+{% endif %}
+    # check is disabled cause of multiple processes

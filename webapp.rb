@@ -93,7 +93,7 @@ get '/haproxybackends' do
   Relay.all.each do |relay|
     next if relay.lb == false && relay.public == false
     @loadbalancer << relay if relay.lb
-    @webm         << relay if relay.tags.include?(Tag.where(name: 'webm').first)
+    @icecast         << relay if relay.tags.include?(Tag.where(name: 'icecast').first)
     @relive       << relay if relay.tags.include?(Tag.where(name: 'relive').first)
     @hls          << relay if relay.tags.include?(Tag.where(name: 'hls').first)
 
@@ -102,7 +102,7 @@ get '/haproxybackends' do
   end
 
   # remove local und usa relays from normal relays
-  [@hls, @relive, @webm].each do |tag|
+  [@hls, @relive, @icecast].each do |tag|
     tag = tag - @usa - @local
   end
 

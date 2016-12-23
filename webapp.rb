@@ -316,7 +316,7 @@ helpers do
   end
 
   def send_mqtt_message(relay)
-    message_humans = RelayRegister::Mqtt.generate_message_for_humans(relay)
+    message_humans = RelayRegister::Mqtt.generate_message_for_humans(settings.config['url_base'], relay)
     message_robots = RelayRegister::Mqtt.generate_message_for_robots(relay)
 
     RelayRegister::Mqtt.send_message({password: settings.config['mqtt']['password'], username: settings.config['mqtt']['username'], remote_host: settings.config['mqtt']['server']},

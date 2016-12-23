@@ -2,6 +2,7 @@ database: db/db.sqlite3
 asn_db: db/asn_db.txt
 
 reason: 32C3
+url_base: https://c3voc.de/32c3/register/relay/
 
 api_key: möpmöp
 encryption_key: todeskey

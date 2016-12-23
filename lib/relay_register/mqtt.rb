@@ -16,7 +16,7 @@ class RelayRegister
     #
     # @param relay [Relay] new relay
     # @return [Hash] mqtt message
-    def self.generate_message_for_humans(relay)
+    def self.generate_message_for_humans(url_base, relay)
       hash              = {}
       hash['component'] = 'relay/new'
       hash['level']     = 'info'
@@ -25,8 +25,7 @@ class RelayRegister
                           "memory: #{relay.total_memory}, "\
                           "disk space: #{relay.free_space}, "\
                           "network interfaces: #{relay.interfaces.count} - "\
-                          "https://c3voc.de/32c3/register/relay/#{relay.id}"
-                          # TODO: add setting for base url
+                          + url_base + relay.id.to_s
       hash
     end
 

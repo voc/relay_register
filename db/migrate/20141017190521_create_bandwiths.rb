@@ -1,4 +1,4 @@
-class CreateBandwiths < ActiveRecord::Migration
+class CreateBandwiths < ActiveRecord::Migration[4.2]
   def change
     create_table :bandwiths do |t|
       t.belongs_to  :relay

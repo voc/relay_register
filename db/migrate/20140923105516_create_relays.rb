@@ -1,4 +1,4 @@
-class CreateRelays < ActiveRecord::Migration
+class CreateRelays < ActiveRecord::Migration[4.2]
   def change
     create_table :relays do |t|
       t.string :ip

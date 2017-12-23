@@ -2,13 +2,13 @@
   %li
     %a{href: url('/graph')} graph
   %li
-    %a{href: url('/ipaddresses')} list all ipaddresses
+    %a{href: url('/tags')} tags
   %li
-    %a{href: url('/haproxybackends')} haproxy backends
+    %a{href: url('/settings')} settings
   %li
     %a{href: url('/relays')} json
   %li
-    %a{href: url('/settings')} settings
+    %a{href: url('/ipaddresses')} list all ipaddresses
 
 %ul.head_status
   %li
@@ -19,8 +19,6 @@
     = "master relays: #{@relays.where(public: false, lb: false).count}"
   %li
     = "loadbalancer: #{@relays.where(lb: true).count}"
-  %li
-    = "public relay tx bw: #{RelayRegister::Bandwidth.normalize(@public_relays.map{|r| r.tx }.inject{|sum,x| sum + x })}"
 
 - if @group
   - @relays.group_by{ |r| @subnet_tree.search(r.ip)[:name] }.each do |asn, relays|
@@ -40,10 +38,6 @@
             %a{href: url('/?sort=memory')} memory
           %th
             %a{href: url('/?sort=master')} master
-          %th
-            %a{href: url('/?sort=tx')} tx
-          %th
-            %a{href: url('/?sort=rx')} rx
           %th actions
       %tbody
         - relays.each do |relay|
@@ -77,18 +71,9 @@
                 = Relay.find(relay.master).hostname_short
               - rescue
                 = ""
-            -# tx
-            %td= RelayRegister::Bandwidth.normalize(relay.tx)
-            -# rx
-            %td= RelayRegister::Bandwidth.normalize(relay.rx)
             %td
               %a{ href: url("/relay/#{relay.id}/edit"), class: 'action' } edit
               %a{ href: url("/relay/#{relay.id}/delete"), class: 'action' } delete
-        %tr
-          %td{colspan: 8 } expected public network streaming capacity
-          %td= RelayRegister::Bandwidth.normalize(relays.map{|r| r.tx }.inject{|sum,x| sum + x })
-          %td= RelayRegister::Bandwidth.normalize(relays.map{|r| r.rx }.inject{|sum,x| sum + x })
-          %td
 
 - else
   %table{ border: true}
@@ -107,10 +92,6 @@
           %a{href: url('/?sort=memory')} memory
         %th
           %a{href: url('/?sort=master')} master
-        %th
-          %a{href: url('/?sort=tx')} tx
-        %th
-          %a{href: url('/?sort=rx')} rx
         %th actions
     %tbody
       - @relays.each do |relay|
@@ -142,15 +123,6 @@
               = Relay.find(relay.master).hostname_short
             - rescue
               = ""
-          -# tx
-          %td= RelayRegister::Bandwidth.normalize(relay.tx)
-          -# rx
-          %td= RelayRegister::Bandwidth.normalize(relay.rx)
           %td
             %a{ href: url("/relay/#{relay.id}/edit"), class: 'action' } edit
             %a{ href: url("/relay/#{relay.id}/delete"), class: 'action' } delete
-      %tr
-        %td{colspan: 8 } expected public network streaming capacity
-        %td= RelayRegister::Bandwidth.normalize(@relays.map{|r| r.tx }.inject{|sum,x| sum + x })
-        %td= RelayRegister::Bandwidth.normalize(@relays.map{|r| r.rx }.inject{|sum,x| sum + x })
-        %td

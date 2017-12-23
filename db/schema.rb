@@ -10,24 +10,13 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20151128154156) do
-
-  create_table "bandwidths", force: :cascade do |t|
-    t.integer "relay_id"
-    t.string "destination"
-    t.text "iperf"
-    t.boolean "at_the_same_time", default: false
-    t.boolean "is_deleted", default: false
-    t.datetime "created_at"
-    t.datetime "updated_at"
-  end
+ActiveRecord::Schema.define(version: 20171223114355) do
 
   create_table "relays", force: :cascade do |t|
     t.string "ip"
     t.string "mac"
     t.string "hostname"
     t.string "master"
-    t.string "measured_bandwidth"
     t.text "contact"
     t.text "ip_config"
     t.text "disk_size"

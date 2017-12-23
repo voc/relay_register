@@ -2,8 +2,7 @@ require 'ipaddr'
 
 class Relay < ActiveRecord::Base
 
-  has_many :bandwidths
-  has_and_belongs_to_many :tags, -> { uniq }
+  has_and_belongs_to_many :tags, -> { distinct }
   before_save :default_master
 
   scope :public_relays,     -> { where(public: true) }

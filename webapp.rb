@@ -9,7 +9,6 @@ require 'json'
 require 'graph'
 # own libs
 require_relative 'models/relay'
-require_relative 'models/bandwidth'
 require_relative 'models/subnet_tree'
 require_relative 'models/tag'
 require_relative 'lib/relay_register'
@@ -53,13 +52,6 @@ get '/' do
   @public_relays = Relay.where(public: true)
   @group         = true
 
-  sum = 0
-  @public_relays.each do |relay|
-    sum += relay.measured_bandwidth.to_f if relay.measured_bandwidth
-  end
-
-  @measured_bandwidth = sum
-
   haml :index
 end
 
@@ -81,32 +73,6 @@ get '/ipaddresses' do
   end
 
   [ v4 + v6 ].join(",\n")
-end
-
-get '/haproxybackends' do
-  protected!
-
-  content_type :txt
-
-  @hls, @relive, @icecast, @loadbalancer, @local, @usa = [], [], [], [], [], []
-
-  Relay.all.each do |relay|
-    next if relay.lb == false && relay.public == false
-    @loadbalancer << relay if relay.lb
-    @icecast      << relay if relay.tags.include?(Tag.where(name: 'icecast').first)
-    @relive       << relay if relay.tags.include?(Tag.where(name: 'relive').first)
-    @hls          << relay if relay.tags.include?(Tag.where(name: 'hls').first)
-
-    @local << relay if relay.tags.include?(Tag.where(name: 'local').first)
-    @usa   << relay if relay.tags.include?(Tag.where(name: 'usa').first)
-  end
-
-  # remove local und usa relays from normal relays
-  @hls = (@hls - @usa) - @local
-  @relive = (@relive - @usa) - @local
-  @icecast = (@icecast - @usa) - @local
-
-  erb :haproxybackends
 end
 
 get '/relays' do
@@ -152,28 +118,11 @@ get '/relay/:id' do
 
   @relay       = Relay.find(params[:id])
   @subnet_tree = settings.subnet_tree
-  if @relay.bandwidths.count != 0
-    @relay_bw = Hash[@relay.bandwidths.group_by{ |r| r.created_at }.sort_by{ |k, v| k }]
-  end
 
   haml :'relay/show'
 end
 
 # Manage Relays
-['/relay/:id/bandwidth', '/relay/:id/bandwith'].each do |path|
-  get path do
-    protected!
-
-    @relay       = Relay.find(params[:id])
-    @subnet_tree = settings.subnet_tree
-    if @relay.bandwidths.count != 0
-      @relay_bw = Hash[@relay.bandwidths.group_by{ |r| r.created_at }.sort_by{ |k, v| k }.reverse]
-    end
-
-    haml :'relay/bandwidth'
-  end
-end
-
 get '/relay/:id/delete' do
   protected!
 
@@ -250,41 +199,6 @@ post '/register' do
     status 200
   else
     status 401
-  end
-end
-
-['/register/bandwidth', '/register/bandwith'].each do |path|
-  post path do
-    content_type :json
-    data = parse_request_body(request.body.read)
-
-    if api_key_valid?(data['api_key']) && data['raw_data']['measures'] != nil
-      relay = new_relay?(request.ip, mac = extract_first_interface_mac(data['raw_data']['ip_config']))
-
-      # Create new bw entry for each pf destination
-      data['raw_data']['measures']['single_destinations'].each do |dest, iperf|
-        Bandwidth.create(
-          relay: relay,
-          iperf: iperf,
-          destination: dest,
-          created_at: Time.at(data['raw_data']['time'])
-        )
-      end
-
-      # Create bw parallel test item
-      md = data['raw_data']['measures']['multiple_destinations']
-      Bandwidth.create(
-        relay: relay,
-        iperf: md['iperf'],
-        at_the_same_time: true,
-        destination: md['destinations'].join(','),
-        created_at: Time.at(data['raw_data']['time'])
-      )
-
-      status 200
-    else
-      status 401
-    end
   end
 end
 
@@ -385,7 +299,8 @@ helpers do
           color << node(relay_string) << edge(master_string, relay_string)
         end
       end
-       save(File.join(APP_ROOT, 'views', 'public', 'images', 'graph'), 'png')
+
+      save(File.join(APP_ROOT, 'views', 'public', 'images', 'graph'), 'png')
     end
   end
 
@@ -409,7 +324,6 @@ helpers do
     when 'hostname' then Relay.order(:hostname)
     when 'master'   then Relay.order(:master)
     when 'memory'   then Relay.all.sort_by{ |o, e| o.total_memory <=> o.total_memory }
-    when 'bw'       then Relay.order(measured_bandwidth: :desc)
     else
       Relay.order(:public)
     end

@@ -33,36 +33,6 @@ The API expects the following object resources in JSON format:
 
 `data` needs to be `AES-256-CBC` encrypted and Base64 encoded.
 
-### Measuring bandwidth
-
-To send some bandwidth data use `/register/bandwidth` path and POST
-JSON in the following format:
-
-```
-{
-  "iv": "iv",
-  "data": {
-    "api_key": "api_key",
-    "raw_data": {
-      "time": "1242458669857",
-      "ip_config": "`ip a`",
-      "measures": {
-        "single_destinations": {
-          "10.10.13.37": "iperf csv output",
-          "192.168.23.42": "iperf csv output"
-        },
-        "multiple_destinations": {
-          "destinations": ["10.10.13.37", "192.168.23.42"],
-          "iperf": "iperf sum in csv format"
-        }
-      }
-    }
-  }
-}
-```
-
-See `measure_bw.rb` in examples folder.
-
 ## Create archive
 
     ```

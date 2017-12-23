@@ -1,0 +1,11 @@
+%h2= "edit #{@tag.name}"
+
+%form{action: url("/tag/#{@tag.name}"), method: 'post'}
+  %input{name: '_method', :type => 'hidden', :value => 'put'}/
+
+  %p
+    %label name:
+    %input{name: 'tag[name]', type: 'text', value: @tag.name}/
+
+  %p
+    %input{name: 'commit', type: 'submit', value: 'update'}/

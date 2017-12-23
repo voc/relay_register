@@ -1,0 +1,5 @@
+%h2= "delete #{@tag.name}"
+
+%form{action: url("/tag/#{@tag.name}"), method: 'POST'}
+  %input{ type: "hidden", name:"_method", value: "DELETE" }
+  %input{ type: "submit", value:"Delete" }

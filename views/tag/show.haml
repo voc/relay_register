@@ -1,0 +1,17 @@
+%h2= @tag.name
+
+
+%ul.head_menu
+  %li
+    %a{href: url("/tag/#{@tag.name}/edit")} edit
+  %li
+    %a{href: url("/tag/#{@tag.name}/delete")} delete
+
+
+%h3 tag name
+%pre
+  = @tag.name
+
+
+%p
+  %a{ href: url('/') } ← back

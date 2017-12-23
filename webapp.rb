@@ -112,6 +112,14 @@ get '/relays' do
   JSON.pretty_generate(relays)
 end
 
+get '/tags' do
+  @tags = Tag.all
+
+  haml :'tag/index'
+end
+
+
+
 # Manage Relays
 get '/relay/:id' do
   protected!
@@ -162,6 +170,69 @@ put '/relay/:id' do
   else
     render :'relay/edit'
   end
+end
+
+# Manage tags
+get '/tag/:name/delete' do
+  protected!
+
+  @tag = Tag.find_by(name: params[:name])
+  haml :'tag/delete'
+end
+
+delete '/tag/:name' do
+  protected!
+
+  tag = Tag.find_by(name: params[:name])
+
+  if tag.delete
+    redirect to('/tags')
+  else
+    status 500
+  end
+end
+
+get '/tag/:name/edit' do
+  protected!
+
+  @tag  = Tag.find_by(name: params[:name])
+  @tags = Tag.all
+
+  haml :'tag/edit'
+end
+
+put '/tag/new' do
+  @tag = Tag.new(params[:tag])
+
+  if Tag.find_by(name: @tag.name).nil? && @tag.save
+    redirect to("/tags")
+  else
+    redirect to("/tags")
+  end
+end
+
+put '/tag/:name' do
+  protected!
+
+  @tag = Tag.find_by(name: params[:name])
+
+  if @tag.update_attributes(params[:tag])
+    redirect to("tag/#{@tag.name}")
+  else
+    render :'tags/edit'
+  end
+end
+
+get '/tag/new' do
+  @tag = Tag.new
+
+  haml :'tag/new'
+end
+
+get '/tag/:name' do
+  @tag = Tag.find_by(name: params[:name])
+
+  haml :'tag/show'
 end
 
 # Graph

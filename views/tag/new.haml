@@ -1,0 +1,11 @@
+%h2 create new tag
+
+%form{action: url("/tag/new"), method: 'post'}
+  %input{name: '_method', :type => 'hidden', :value => 'put'}/
+
+  %p
+    %label name:
+    %input{name: 'tag[name]', type: 'text'}/
+
+  %p
+    %input{name: 'commit', type: 'submit', value: 'new'}/

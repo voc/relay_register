@@ -1,0 +1,25 @@
+%h2 tags
+
+%ul.head_menu
+  %li
+    %a{href: url("/tag/new")} new
+%br
+
+%table{ border: true}
+  %thead
+    %tr
+      %th name
+      %th actions
+  %tbody
+    - @tags.each do |tag|
+      %tr
+        %td
+          %a{ href: url("/tag/#{tag.name}")}
+            = tag.name
+        %td
+          %a{ href: url("/tag/#{tag.name}/edit"), class: 'action' } edit
+          %a{ href: url("/tag/#{tag.name}/delete"), class: 'action' } delete
+
+
+%p
+  %a{ href: url('/') } ← back

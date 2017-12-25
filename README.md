@@ -1,5 +1,7 @@
 # relay register
 
+![relay register screenshot](/examples/relay_register.png?raw=true "relay register screenshot")
+
 ## Usage
 
 ### Register new relay
@@ -35,10 +37,10 @@ The API expects the following object resources in JSON format:
 
 ## Create archive
 
-    ```
-     wget --http-user=winke --http-password=katze --mirror --page-requisites \
-          --adjust-extension --convert-links https://c3voc.de/31c3/register
-    ```
+```
+wget --http-user=winke --http-password=katze --mirror --page-requisites \
+     --adjust-extension --convert-links https://c3voc.de/31c3/register
+```
 
 ## Install
 

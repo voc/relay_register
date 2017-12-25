@@ -6,9 +6,9 @@ settings.yml
 .yardoc
 doc
 *sqlite3
-*png
 *dot
 *asn_db.txt
 latest-bview.gz
 data-used-autnums
 db/backup
+views/public/images

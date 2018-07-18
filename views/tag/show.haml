@@ -3,9 +3,9 @@
 
 %ul.head_menu
   %li
-    %a{href: url("/tag/#{@tag.name}/edit")} edit
+    %a{href: url("#{settings.sub_path}/tag/#{@tag.name}/edit")} edit
   %li
-    %a{href: url("/tag/#{@tag.name}/delete")} delete
+    %a{href: url("#{settings.sub_path}/tag/#{@tag.name}/delete")} delete
 
 
 %h3 tag name
@@ -14,4 +14,4 @@
 
 
 %p
-  %a{ href: url('/') } ← back
+  %a{ href: url(settings.sub_path + '/') } ← back

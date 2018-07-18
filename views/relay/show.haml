@@ -12,7 +12,7 @@
 
 %ul.head_menu
   %li
-    %a{href: url("/relay/#{@relay.id}/edit")} edit
+    %a{href: url("#{settings.sub_path}/relay/#{@relay.id}/edit")} edit
 
 %ul.head_status
   - unless @relay.public.nil?
@@ -62,7 +62,7 @@
           %tr{ title: "#{as[:name]}"}
             - if relay = Relay.find_by_ip(bw.destination)
               %td
-                %a{href: url("/relay/#{relay.id}")}= relay.hostname
+                %a{href: url("#{settings.sub_path}/relay/#{relay.id}")}= relay.hostname
             - else
               %td
             %td= bw.destination
@@ -71,7 +71,7 @@
             %td= Bandwidth.normalize(bw.tx)
             %td= Bandwidth.normalize(bw.rx)
   %p
-    %a{href: url("/relay/#{@relay.id}/bandwidth")} → more
+    %a{href: url("#{settings.sub_path}/relay/#{@relay.id}/bandwidth")} → more
 
 %a{name: 'ip'}
 %h3 ip a
@@ -99,4 +99,4 @@
   = preserve @relay.lspci
 
 %p
-  %a{ href: url('/') } ← back
+  %a{ href: url(settings.sub_path + '/') } ← back

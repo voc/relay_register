@@ -1,6 +1,6 @@
 %h2= "edit #{@tag.name}"
 
-%form{action: url("/tag/#{@tag.name}"), method: 'post'}
+%form{action: url("#{settings.sub_path}/tag/#{@tag.name}"), method: 'post'}
   %input{name: '_method', :type => 'hidden', :value => 'put'}/
 
   %p

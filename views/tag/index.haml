@@ -2,7 +2,7 @@
 
 %ul.head_menu
   %li
-    %a{href: url("/tag/new")} new
+    %a{href: url("#{settings.sub_path}/tag/new")} new
 %br
 
 %table{ border: true}
@@ -14,12 +14,12 @@
     - @tags.each do |tag|
       %tr
         %td
-          %a{ href: url("/tag/#{tag.name}")}
+          %a{ href: url("#{settings.sub_path}/tag/#{tag.name}")}
             = tag.name
         %td
-          %a{ href: url("/tag/#{tag.name}/edit"), class: 'action' } edit
-          %a{ href: url("/tag/#{tag.name}/delete"), class: 'action' } delete
+          %a{ href: url("#{settings.sub_path}/tag/#{tag.name}/edit"), class: 'action' } edit
+          %a{ href: url("#{settings.sub_path}/tag/#{tag.name}/delete"), class: 'action' } delete
 
 
 %p
-  %a{ href: url('/') } ← back
+  %a{ href: url(settings.sub_path + '/') } ← back

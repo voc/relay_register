@@ -1,14 +1,14 @@
 %ul.head_menu
   %li
-    %a{href: url('/graph')} graph
+    %a{href: url(settings.sub_path + '/graph')} graph
   %li
-    %a{href: url('/tags')} tags
+    %a{href: url(settings.sub_path + '/tags')} tags
   %li
-    %a{href: url('/settings')} settings
+    %a{href: url(settings.sub_path + '/settings')} settings
   %li
-    %a{href: url('/relays')} json
+    %a{href: url(settings.sub_path + '/relays')} json
   %li
-    %a{href: url('/ipaddresses')} list all ipaddresses
+    %a{href: url(settings.sub_path + '/ipaddresses')} list all ipaddresses
 
 %ul.head_status
   %li
@@ -27,17 +27,17 @@
       %thead
         %tr
           %th
-            %a{href: url('/?sort=pbl')} pbl
+            %a{href: url(settings.sub_path + '/?sort=pbl')} pbl
           %th tags
           %th
-            %a{href: url('/?sort=hostname')} hostname
+            %a{href: url(settings.sub_path + '/?sort=hostname')} hostname
           %th cpus
           %th interfaces
           %th disk space
           %th
-            %a{href: url('/?sort=memory')} memory
+            %a{href: url(settings.sub_path + '/?sort=memory')} memory
           %th
-            %a{href: url('/?sort=master')} master
+            %a{href: url(settings.sub_path + '/?sort=master')} master
           %th actions
       %tbody
         - relays.each do |relay|
@@ -51,47 +51,47 @@
             - else
               %td
             %td
-              %a{ href: url("/relay/#{relay.id}")}
+              %a{ href: url("#{settings.sub_path}/relay/#{relay.id}")}
                 = relay.tags.map(&:name).join('<br>')
             %td
-              %a{ href: url("/relay/#{relay.id}")}= relay.hostname_short
+              %a{ href: url("#{settings.sub_path}/relay/#{relay.id}")}= relay.hostname_short
             %td
-              %a{ href: url("/relay/#{relay.id}#cpu") }= "#{relay.cpu_cores}x #{relay.cpu_model_name}"
+              %a{ href: url("#{settings.sub_path}/relay/#{relay.id}#cpu") }= "#{relay.cpu_cores}x #{relay.cpu_model_name}"
             %td
               - relay.interfaces.each do |k,v|
                 - next if k =~ /^lo/ || v['ipv4'].count == 0
-                %a{href: url("/relay/#{relay.id}#ip")}= "#{k}: #{v['ipv4'].join(', ')}"
+                %a{href: url("#{settings.sub_path}/relay/#{relay.id}#ip")}= "#{k}: #{v['ipv4'].join(', ')}"
                 %br
             %td
-              %a{href: url("/relay/#{relay.id}#disk")}= relay.free_space
+              %a{href: url("#{settings.sub_path}/relay/#{relay.id}#disk")}= relay.free_space
             %td
-              %a{href: url("/relay/#{relay.id}#memory")}= "#{relay.total_memory}"
+              %a{href: url("#{settings.sub_path}/relay/#{relay.id}#memory")}= "#{relay.total_memory}"
             %td
               - begin
                 = Relay.find(relay.master).hostname_short
               - rescue
                 = ""
             %td
-              %a{ href: url("/relay/#{relay.id}/edit"), class: 'action' } edit
-              %a{ href: url("/relay/#{relay.id}/delete"), class: 'action' } delete
+              %a{ href: url("#{settings.sub_path}/relay/#{relay.id}/edit"), class: 'action' } edit
+              %a{ href: url("#{settings.sub_path}/relay/#{relay.id}/delete"), class: 'action' } delete
 
 - else
   %table{ border: true}
     %thead
       %tr
         %th
-          %a{href: url('/?sort=pbl')} pbl
+          %a{href: url(settings.sub_path + '/?sort=pbl')} pbl
         %th
           tags
         %th
-          %a{href: url('/?sort=hostname')} hostname
+          %a{href: url(settings.sub_path + '/?sort=hostname')} hostname
         %th cpus
         %th interfaces
         %th disk space
         %th
-          %a{href: url('/?sort=memory')} memory
+          %a{href: url(settings.sub_path + '/?sort=memory')} memory
         %th
-          %a{href: url('/?sort=master')} master
+          %a{href: url(settings.sub_path + '/?sort=master')} master
         %th actions
     %tbody
       - @relays.each do |relay|
@@ -103,26 +103,26 @@
           - else
             %td
           %td
-            %a{ href: url("/relay/#{relay.id}")}
+            %a{ href: url("#{settings.sub_path}/relay/#{relay.id}")}
               = relay.tags.map(&:name).join('<br>')
           %td
-            %a{ href: url("/relay/#{relay.id}")}= relay.hostname_short
+            %a{ href: url("#{settings.sub_path}/relay/#{relay.id}")}= relay.hostname_short
           %td
-            %a{ href: url("/relay/#{relay.id}#cpu") }= "#{relay.cpu_cores}x #{relay.cpu_model_name}"
+            %a{ href: url("#{settings.sub_path}/relay/#{relay.id}#cpu") }= "#{relay.cpu_cores}x #{relay.cpu_model_name}"
           %td
             - relay.interfaces.each do |k,v|
               - next if k =~ /^lo/ || v['ipv4'].count == 0
-              %a{href: url("/relay/#{relay.id}#ip")}= "#{k}: #{v['ipv4'].join(', ')}"
+              %a{href: url("#{settings.sub_path}/relay/#{relay.id}#ip")}= "#{k}: #{v['ipv4'].join(', ')}"
               %br
           %td
-            %a{href: url("/relay/#{relay.id}#disk")}= relay.free_space
+            %a{href: url("#{settings.sub_path}/relay/#{relay.id}#disk")}= relay.free_space
           %td
-            %a{href: url("/relay/#{relay.id}#memory")}= "#{relay.total_memory}"
+            %a{href: url("#{settings.sub_path}/relay/#{relay.id}#memory")}= "#{relay.total_memory}"
           %td
             - begin
               = Relay.find(relay.master).hostname_short
             - rescue
               = ""
           %td
-            %a{ href: url("/relay/#{relay.id}/edit"), class: 'action' } edit
-            %a{ href: url("/relay/#{relay.id}/delete"), class: 'action' } delete
+            %a{ href: url("#{settings.sub_path}/relay/#{relay.id}/edit"), class: 'action' } edit
+            %a{ href: url("#{settings.sub_path}/relay/#{relay.id}/delete"), class: 'action' } delete

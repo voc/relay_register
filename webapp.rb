@@ -1,6 +1,7 @@
 # sinatra gems
 require 'sinatra'
 require 'sinatra/activerecord'
+require 'sinatra/namespace'
 require 'haml'
 # stdlib
 require 'yaml'
@@ -26,6 +27,7 @@ set :views,  File.dirname(__FILE__) + '/views'
 set :public_folder, File.dirname(__FILE__) + '/views/public'
 set :database, { adapter: "sqlite3", database: settings.config['database'] }
 set :subnet_tree, SubnetTree.new(settings.config['asn_db'])
+set :sub_path, settings.config['sub_path']
 
 APP_ROOT = File.expand_path(File.dirname(__FILE__))
 
@@ -43,241 +45,243 @@ error do
   end
 end
 
-# Root
-get '/' do
-  protected!
+namespace "#{settings.sub_path}" do
+  # Root
+  get '/' do
+    protected!
 
-  @subnet_tree   = settings.subnet_tree
-  @relays        = sorting_relays
-  @public_relays = Relay.where(public: true)
-  @group         = true
+    @subnet_tree   = settings.subnet_tree
+    @relays        = sorting_relays
+    @public_relays = Relay.where(public: true)
+    @group         = true
 
-  haml :index
-end
+    haml :index
+  end
 
-get '/ipaddresses' do
-  protected!
+  get '/ipaddresses' do
+    protected!
 
-  content_type :txt
+    content_type :txt
 
-  v4 = []
-  v6 = []
-  Relay.all.each do |relay|
-    relay.public_ips.each do |ip|
-      if ip.ipv6?
-        v6 << "'#{relay.hostname.chomp}': '#{ip.to_s}'"
-      else
-        v4 << "'#{relay.hostname.chomp}': '#{ip.to_s}'"
+    v4 = []
+    v6 = []
+    Relay.all.each do |relay|
+      relay.public_ips.each do |ip|
+        if ip.ipv6?
+          v6 << "'#{relay.hostname.chomp}': '#{ip.to_s}'"
+        else
+          v4 << "'#{relay.hostname.chomp}': '#{ip.to_s}'"
+        end
       end
+    end
+
+    [ v4 + v6 ].join(",\n")
+  end
+
+  get '/relays' do
+    protected!
+
+    content_type :json
+
+    relays = {}
+    Relay.all.each do |relay|
+      relays[relay.hostname] = {}
+      relays[relay.hostname]['as'] = {}
+
+      as = settings.subnet_tree.search(relay.ip)
+      relays[relay.hostname]['as']['name'] = as[:name]
+      relays[relay.hostname]['as']['asn']  = as[:asn]
+
+      relays[relay.hostname]['dns_priority'] = relay.dns_priority
+      relays[relay.hostname]['master']       = relay.master_hostname
+      relays[relay.hostname]['loadbalancer'] = relay.lb
+
+      relays[relay.hostname]['ips'] = {}
+      relays[relay.hostname]['ips']['register'] = relay.ip
+      relays[relay.hostname]['ips']['ipv4']     = relay.ips.map{|ip| ip.to_s unless ip.ipv6?}.compact
+      relays[relay.hostname]['ips']['ipv6']     = relay.ips.map{|ip| ip.to_s if ip.ipv6?}.compact
+
+      relays[relay.hostname]['tags']           = relay.tags.map(&:name)
+      relays[relay.hostname]['public']         = relay.public
+      relays[relay.hostname]['cm_deploy']      = relay.cm_deploy
+      relays[relay.hostname]['interfaces']     = relay.interfaces
+      relays[relay.hostname]['total_memory']   = relay.total_memory
+      relays[relay.hostname]['cpu_cores']      = relay.cpu_cores
+      relays[relay.hostname]['cpu_model_name'] = relay.cpu_model_name
+      relays[relay.hostname]['disk_space']     = relay.free_space
+      relays[relay.hostname]['mount_points']   = relay.mount_points
+    end
+
+    JSON.pretty_generate(relays)
+  end
+
+  get '/tags' do
+    @tags = Tag.all
+
+    haml :'tag/index'
+  end
+
+
+
+  # Manage Relays
+  get '/relay/:id' do
+    protected!
+
+    @relay       = Relay.find(params[:id])
+    @subnet_tree = settings.subnet_tree
+
+    haml :'relay/show'
+  end
+
+  # Manage Relays
+  get '/relay/:id/delete' do
+    protected!
+
+    @relay = Relay.find(params[:id])
+    haml :'relay/delete'
+  end
+
+  delete '/relay/:id' do
+    protected!
+
+    relay = Relay.find(params[:id])
+
+    if relay.delete
+      redirect to('/')
+    else
+      status 500
     end
   end
 
-  [ v4 + v6 ].join(",\n")
-end
+  get '/relay/:id/edit' do
+    protected!
 
-get '/relays' do
-  protected!
-
-  content_type :json
-
-  relays = {}
-  Relay.all.each do |relay|
-    relays[relay.hostname] = {}
-    relays[relay.hostname]['as'] = {}
-
-    as = settings.subnet_tree.search(relay.ip)
-    relays[relay.hostname]['as']['name'] = as[:name]
-    relays[relay.hostname]['as']['asn']  = as[:asn]
-
-    relays[relay.hostname]['dns_priority'] = relay.dns_priority
-    relays[relay.hostname]['master']       = relay.master_hostname
-    relays[relay.hostname]['loadbalancer'] = relay.lb
-
-    relays[relay.hostname]['ips'] = {}
-    relays[relay.hostname]['ips']['register'] = relay.ip
-    relays[relay.hostname]['ips']['ipv4']     = relay.ips.map{|ip| ip.to_s unless ip.ipv6?}.compact
-    relays[relay.hostname]['ips']['ipv6']     = relay.ips.map{|ip| ip.to_s if ip.ipv6?}.compact
-
-    relays[relay.hostname]['tags']           = relay.tags.map(&:name)
-    relays[relay.hostname]['public']         = relay.public
-    relays[relay.hostname]['cm_deploy']      = relay.cm_deploy
-    relays[relay.hostname]['interfaces']     = relay.interfaces
-    relays[relay.hostname]['total_memory']   = relay.total_memory
-    relays[relay.hostname]['cpu_cores']      = relay.cpu_cores
-    relays[relay.hostname]['cpu_model_name'] = relay.cpu_model_name
-    relays[relay.hostname]['disk_space']     = relay.free_space
-    relays[relay.hostname]['mount_points']   = relay.mount_points
+    @relay  = Relay.find(params[:id])
+    @relays = Relay.all
+    haml :'relay/edit'
   end
 
-  JSON.pretty_generate(relays)
-end
+  put '/relay/:id' do
+    protected!
 
-get '/tags' do
-  @tags = Tag.all
+    @relay = Relay.find(params[:id])
 
-  haml :'tag/index'
-end
+    p params
 
-
-
-# Manage Relays
-get '/relay/:id' do
-  protected!
-
-  @relay       = Relay.find(params[:id])
-  @subnet_tree = settings.subnet_tree
-
-  haml :'relay/show'
-end
-
-# Manage Relays
-get '/relay/:id/delete' do
-  protected!
-
-  @relay = Relay.find(params[:id])
-  haml :'relay/delete'
-end
-
-delete '/relay/:id' do
-  protected!
-
-  relay = Relay.find(params[:id])
-
-  if relay.delete
-    redirect to('/')
-  else
-    status 500
+    if @relay.update_attributes(params[:relay]) && update_tags(@relay, params[:tags])
+      redirect to("relay/#{@relay.id}")
+    else
+      render :'relay/edit'
+    end
   end
-end
 
-get '/relay/:id/edit' do
-  protected!
+  # Manage tags
+  get '/tag/:name/delete' do
+    protected!
 
-  @relay  = Relay.find(params[:id])
-  @relays = Relay.all
-  haml :'relay/edit'
-end
-
-put '/relay/:id' do
-  protected!
-
-  @relay = Relay.find(params[:id])
-
-  p params
-
-  if @relay.update_attributes(params[:relay]) && update_tags(@relay, params[:tags])
-    redirect to("relay/#{@relay.id}")
-  else
-    render :'relay/edit'
+    @tag = Tag.find_by(name: params[:name])
+    haml :'tag/delete'
   end
-end
 
-# Manage tags
-get '/tag/:name/delete' do
-  protected!
+  delete '/tag/:name' do
+    protected!
 
-  @tag = Tag.find_by(name: params[:name])
-  haml :'tag/delete'
-end
+    tag = Tag.find_by(name: params[:name])
 
-delete '/tag/:name' do
-  protected!
-
-  tag = Tag.find_by(name: params[:name])
-
-  if tag.delete
-    redirect to('/tags')
-  else
-    status 500
+    if tag.delete
+      redirect to('/tags')
+    else
+      status 500
+    end
   end
-end
 
-get '/tag/:name/edit' do
-  protected!
+  get '/tag/:name/edit' do
+    protected!
 
-  @tag  = Tag.find_by(name: params[:name])
-  @tags = Tag.all
+    @tag  = Tag.find_by(name: params[:name])
+    @tags = Tag.all
 
-  haml :'tag/edit'
-end
-
-put '/tag/new' do
-  @tag = Tag.new(params[:tag])
-
-  if Tag.find_by(name: @tag.name).nil? && @tag.save
-    redirect to("/tags")
-  else
-    redirect to("/tags")
+    haml :'tag/edit'
   end
-end
 
-put '/tag/:name' do
-  protected!
+  put '/tag/new' do
+    @tag = Tag.new(params[:tag])
 
-  @tag = Tag.find_by(name: params[:name])
-
-  if @tag.update_attributes(params[:tag])
-    redirect to("tag/#{@tag.name}")
-  else
-    render :'tags/edit'
+    if Tag.find_by(name: @tag.name).nil? && @tag.save
+      redirect to("/tags")
+    else
+      redirect to("/tags")
+    end
   end
-end
 
-get '/tag/new' do
-  @tag = Tag.new
+  put '/tag/:name' do
+    protected!
 
-  haml :'tag/new'
-end
+    @tag = Tag.find_by(name: params[:name])
 
-get '/tag/:name' do
-  @tag = Tag.find_by(name: params[:name])
-
-  haml :'tag/show'
-end
-
-# Graph
-get '/graph' do
-  protected!
-
-  build_graph unless Relay.count == 0
-  haml :graph
-end
-
-# Submit new relays
-post '/register' do
-  content_type :json
-  data = parse_request_body(request.body.read)
-
-  if api_key_valid?(data['api_key'])
-    # test present relay in database
-    new_relay = new_relay?(request.ip, mac = extract_first_interface_mac(data['raw_data']['ip_config']))
-
-    new_relay == true ? relay = Relay.new : relay = new_relay
-
-    relay.ip        = request.ip
-    relay.mac       = mac
-    relay.hostname  = data['raw_data']['hostname']
-    relay.ip_config = data['raw_data']['ip_config']
-    relay.disk_size = data['raw_data']['disk_size']
-    relay.cpu       = data['raw_data']['cpu']
-    relay.lspci     = data['raw_data']['lspci']
-    relay.memory    = data['raw_data']['memory']
-    relay.save
-
-    # send mqtt message to irc
-    send_mqtt_message(relay) if new_relay == true && settings.config['mqtt']['enabled'] != false
-
-    status 200
-  else
-    status 401
+    if @tag.update_attributes(params[:tag])
+      redirect to("tag/#{@tag.name}")
+    else
+      render :'tags/edit'
+    end
   end
-end
 
-get '/settings' do
-  protected!
+  get '/tag/new' do
+    @tag = Tag.new
 
-  @settings = settings.config
-  haml :settings
+    haml :'tag/new'
+  end
+
+  get '/tag/:name' do
+    @tag = Tag.find_by(name: params[:name])
+
+    haml :'tag/show'
+  end
+
+  # Graph
+  get '/graph' do
+    protected!
+
+    build_graph unless Relay.count == 0
+    haml :graph
+  end
+
+  # Submit new relays
+  post '/register' do
+    content_type :json
+    data = parse_request_body(request.body.read)
+
+    if api_key_valid?(data['api_key'])
+      # test present relay in database
+      new_relay = new_relay?(request.ip, mac = extract_first_interface_mac(data['raw_data']['ip_config']))
+
+      new_relay == true ? relay = Relay.new : relay = new_relay
+
+      relay.ip        = request.ip
+      relay.mac       = mac
+      relay.hostname  = data['raw_data']['hostname']
+      relay.ip_config = data['raw_data']['ip_config']
+      relay.disk_size = data['raw_data']['disk_size']
+      relay.cpu       = data['raw_data']['cpu']
+      relay.lspci     = data['raw_data']['lspci']
+      relay.memory    = data['raw_data']['memory']
+      relay.save
+
+      # send mqtt message to irc
+      send_mqtt_message(relay) if new_relay == true && settings.config['mqtt']['enabled'] != false
+
+      status 200
+    else
+      status 401
+    end
+  end
+
+  get '/settings' do
+    protected!
+
+    @settings = settings.config
+    haml :settings
+  end
 end
 
 # Some useful helper methods

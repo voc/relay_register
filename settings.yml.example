@@ -1,6 +1,8 @@
 database: db/db.sqlite3
 asn_db: db/asn_db.txt
 
+sub_path: ""
+
 reason: relay register
 url_base: https://c3voc.de/32c3/register/relay/
 

@@ -1,6 +1,6 @@
 %h2 create new tag
 
-%form{action: url("/tag/new"), method: 'post'}
+%form{action: url("#{settings.sub_path}/tag/new"), method: 'post'}
   %input{name: '_method', :type => 'hidden', :value => 'put'}/
 
   %p

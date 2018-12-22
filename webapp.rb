@@ -147,7 +147,7 @@ namespace "#{settings.sub_path}" do
     relay = Relay.find(params[:id])
 
     if relay.delete
-      redirect to('/')
+      redirect_to('/')
     else
       status 500
     end
@@ -169,7 +169,7 @@ namespace "#{settings.sub_path}" do
     p params
 
     if @relay.update_attributes(params[:relay]) && update_tags(@relay, params[:tags])
-      redirect to("relay/#{@relay.id}")
+      redirect_to("relay/#{@relay.id}")
     else
       render :'relay/edit'
     end
@@ -189,7 +189,7 @@ namespace "#{settings.sub_path}" do
     tag = Tag.find_by(name: params[:name])
 
     if tag.delete
-      redirect to('/tags')
+      redirect_to('/tags')
     else
       status 500
     end
@@ -208,9 +208,9 @@ namespace "#{settings.sub_path}" do
     @tag = Tag.new(params[:tag])
 
     if Tag.find_by(name: @tag.name).nil? && @tag.save
-      redirect to("/tags")
+      redirect_to("/tags")
     else
-      redirect to("/tags")
+      redirect_to("/tags")
     end
   end
 
@@ -220,7 +220,7 @@ namespace "#{settings.sub_path}" do
     @tag = Tag.find_by(name: params[:name])
 
     if @tag.update_attributes(params[:tag])
-      redirect to("tag/#{@tag.name}")
+      redirect_to("tag/#{@tag.name}")
     else
       render :'tags/edit'
     end

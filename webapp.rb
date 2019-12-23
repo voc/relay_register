@@ -295,7 +295,7 @@ helpers do
     body = JSON.parse(request_body)
     # try to decrypt data
     begin
-      decrypted_data = RelayRegister::AES.decrypt(body['data'], settings.config['encryption_key'], body['iv'])
+      decrypted_data = RelayRegister::AES.decrypt(body['data'], settings.config['encryption_key'], [body['iv']].pack('H*'))
     rescue
       status 510
       return

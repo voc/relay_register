@@ -3,7 +3,7 @@ require 'spec_helper'
 describe RelayRegister::AES do
 
   before(:each) do
-    @iv   = OpenSSL::Cipher.new('aes-256-cbc').random_iv.unpack('H*')[0]
+    @iv   = OpenSSL::Cipher.new('aes-256-cbc').random_iv
     @data = 'My plain text data!!1!'
     @key  = @config['encryption_key']
   end

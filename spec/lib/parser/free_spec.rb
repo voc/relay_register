@@ -11,19 +11,19 @@ END
   describe '.total' do
     it 'should return total memory' do
       total = RelayRegister::Parser::Free.total(@free)
-      expect(total).to eq('7.7GB')
+      expect(total).to eq('7.7 GB')
     end
   end
 
   describe '.readable_size' do
     it 'should convert size in MB to human readable GB' do
       total = RelayRegister::Parser::Free.readable_size(4242)
-      expect(total).to eq('4.14GB')
+      expect(total).to eq('4.14 GB')
     end
 
     it 'should convert size in MB to human readable MB' do
       total = RelayRegister::Parser::Free.readable_size(512)
-      expect(total).to eq('512.0MB')
+      expect(total).to eq('512.0 MB')
     end
   end
 end

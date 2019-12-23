@@ -111,7 +111,7 @@ describe 'RelayRegister' do
     before(:each) do
       @api_key = @config['api_key']
       @key     = @config['encryption_key']
-      @iv      = OpenSSL::Cipher.new('aes-256-cbc').random_iv.unpack('H*')[0]
+      @iv      = OpenSSL::Cipher.new('aes-256-cbc').random_iv
 
       @raw_data = {
         api_key: @api_key,
@@ -126,7 +126,7 @@ describe 'RelayRegister' do
       }.to_json
 
       @data = {
-        iv: @iv,
+        iv: @iv.unpack('H*')[0],
         data: RelayRegister::AES.encrypt(@raw_data, @key, @iv)
       }.to_json
     end
@@ -141,7 +141,7 @@ describe 'RelayRegister' do
       @raw_data['api_key'] = '1234'
 
       @data = {
-        iv: @iv,
+        iv: @iv.unpack('H*')[0],
         data: RelayRegister::AES.encrypt(@raw_data, @key, @iv)
       }.to_json
 

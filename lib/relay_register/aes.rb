@@ -11,7 +11,7 @@ class RelayRegister
     # @return [String] plain text data
     def self.decrypt(data, password, iv)
       secretdata = Base64::decode64(data)
-      decipher = OpenSSL::Cipher::Cipher.new(CIPHER)
+      decipher = OpenSSL::Cipher.new(CIPHER)
       decipher.decrypt
       decipher.key = Digest::SHA256.digest(password)
       decipher.iv  = iv

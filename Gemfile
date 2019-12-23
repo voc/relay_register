@@ -2,8 +2,8 @@ source 'https://rubygems.org'
 
 gem 'rake', '~> 10.4.2'
 # webframework
-gem 'sinatra', '~> 2.0.3'
-gem 'sinatra-contrib', '~> 2.0.3'
+gem 'sinatra', '~> 2.0.3', require: 'sinatra/base'
+gem 'sinatra-contrib', '~> 2.0.3', require: false
 gem 'haml', '~>5.0.4'
 # database stuff
 gem 'sinatra-activerecord', '~> 2.0.13'

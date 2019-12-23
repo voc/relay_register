@@ -23,7 +23,7 @@ describe Relay do
   describe '#total_memory' do
     it 'should return totel memory' do
       total_memory = @relay.total_memory
-      expect(total_memory).to eq('7.7GB')
+      expect(total_memory).to eq('7.7 GB')
     end
   end
 
@@ -35,9 +35,9 @@ describe Relay do
   end
 
   describe '#free_space' do
-    it 'should calculte free disk space' do
+    it 'should calculate free disk space' do
       free_space = @relay.free_space
-      expect(free_space).to eq('57.3GB')
+      expect(free_space).to eq('53.3 GB')
     end
   end
 

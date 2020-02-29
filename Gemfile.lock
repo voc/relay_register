@@ -65,7 +65,7 @@ GEM
       rack
     rack-test (1.1.0)
       rack (>= 1.0, < 3)
-    rake (10.4.2)
+    rake (12.3.3)
     rb-inotify (0.10.0)
       ffi (~> 1.0)
     ripl (0.7.1)
@@ -140,7 +140,7 @@ DEPENDENCIES
   mqtt
   rack
   rack-test
-  rake (~> 10.4.2)
+  rake (~> 12.3.3)
   rspec (~> 3.1.0)
   ruby-radix
   simplecov (~> 0.8.2)

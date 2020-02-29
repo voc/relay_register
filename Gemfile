@@ -1,6 +1,6 @@
 source 'https://rubygems.org'
 
-gem 'rake', '~> 10.4.2'
+gem 'rake', '~> 12.3.3'
 # webframework
 gem 'sinatra', '~> 2.0.3', require: 'sinatra/base'
 gem 'sinatra-contrib', '~> 2.0.3', require: false

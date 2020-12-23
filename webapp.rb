@@ -253,7 +253,7 @@ namespace "#{settings.sub_path}" do
 
     if api_key_valid?(data['api_key'])
       # test present relay in database
-      new_relay = new_relay?(request.ip, mac = extract_first_interface_mac(data['raw_data']['ip_config']))
+      new_relay = new_relay?(request.ip, hostname = data['raw_data']['hostname'])
 
       new_relay == true ? relay = Relay.new : relay = new_relay
 
@@ -314,8 +314,8 @@ helpers do
 
   end
 
-  def new_relay?(ip, mac)
-    relay = Relay.find_by(ip: ip, mac: mac)
+  def new_relay?(ip, hostname)
+    relay = Relay.find_by(ip: ip, hostname: hostname)
     relay.nil? ? true : relay
   end
 

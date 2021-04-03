@@ -168,7 +168,7 @@ namespace "#{settings.sub_path}" do
 
     p params
 
-    if @relay.update_attributes(params[:relay]) && update_tags(@relay, params[:tags])
+    if @relay.update(params[:relay]) && update_tags(@relay, params[:tags])
       redirect_to("relay/#{@relay.id}")
     else
       render :'relay/edit'
@@ -219,7 +219,7 @@ namespace "#{settings.sub_path}" do
 
     @tag = Tag.find_by(name: params[:name])
 
-    if @tag.update_attributes(params[:tag])
+    if @tag.update(params[:tag])
       redirect_to("tag/#{@tag.name}")
     else
       render :'tags/edit'
